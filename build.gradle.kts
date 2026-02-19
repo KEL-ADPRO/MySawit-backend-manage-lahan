@@ -66,13 +66,6 @@ tasks.test {
 	finalizedBy(tasks.jacocoTestReport)
 }
 
-tasks.jacocoTestReport {
-	dependsOn(tasks.test)
-	reports {
-		xml.required.set(true)
-	}
-}
-
 sonar {
 	properties {
 		property("sonar.projectKey", "KEL-ADPRO_MySawit-backend-manage-lahan")
