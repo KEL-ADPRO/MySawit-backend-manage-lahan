@@ -47,4 +47,5 @@ Currently implemented endpoints for the Kebun module:
 | `GET` | `/api/kebun` | Fetch a list of all Kebun | N/A |
 | `POST` | `/api/kebun` | Create a new Kebun entry | `{ "nama": "string" }` |
 
+
 *(Note: CORS is configured to allow requests from the frontend running on `http://localhost:3000`)*
