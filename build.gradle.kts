@@ -80,7 +80,7 @@ tasks.jacocoTestReport {
 
 sonar {
 	properties {
-		property("sonar.projectKey", "KEL-ADPRO_MySawit-backend-manage-pengiriman")
+		property("sonar.projectKey", "KEL-ADPRO_MySawit-backend-manage-lahan")
 
 		property("sonar.organization", "kel-adpro")
 
