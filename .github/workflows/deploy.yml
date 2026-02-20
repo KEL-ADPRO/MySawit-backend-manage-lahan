@@ -1,0 +1,42 @@
+name: Continuous Deployment (Dummy)
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  build-and-deploy:
+    name: Build and Simulate Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "temurin"
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build Application Artifact
+        run: ./gradlew bootJar
+
+      - name: Verify Build Artifact
+        run: ls -lh build/libs/
+
+      - name: Dummy Server Deployment
+        run: |
+          echo "Starting Deployment Process..."
+          echo "Fetching latest build artifact..."
+          echo "Connecting to production server..."
+          echo "Authentication successful."
+          echo "Uploading artifact to server..."
+          sleep 2 
+          echo "Restarting Spring Boot service..."
+          sleep 2
+          echo "Deployment successful."
