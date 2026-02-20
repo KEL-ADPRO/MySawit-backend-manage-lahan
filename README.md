@@ -22,6 +22,25 @@ Copy the example environment file to create your local `.env` file:
 cp .env.example .env
 ```
 *Update the newly created `.env` file with your active PostgreSQL URL, Username, and Password.*
+- Go to or create `src/main/resources/application.properties` and paste
+```bash
+server.port=8082
+
+spring.datasource.url=${NEON_DB_URL}
+
+spring.datasource.username=${NEON_DB_USERNAME}
+spring.datasource.password=${NEON_DB_PASSWORD}
+
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.hibernate.ddl-auto=update
+
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+```
 
 **3. Run the Application (via IntelliJ IDEA)**
 - Click the three dots beside the Run button at the top right and select **Edit Configurations**.
