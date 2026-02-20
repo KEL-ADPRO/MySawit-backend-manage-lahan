@@ -1,20 +1,15 @@
-name: SonarQube Code Analysis
+name: SonarQube & Linter Code Analysis
 
-on:
-  push:
-    branches:
-      - staging
-      - main
-      - feature/sonarqube-ci
-  pull_request:
+
+on: [push, pull_request]
 
 jobs:
-  build:
-    name: Build and Analyze
+  test-and-analyze:
+    name: Build, Test, and SonarCloud Analysis
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -24,13 +19,15 @@ jobs:
         with:
           java-version: 21
           distribution: "temurin"
-          cache: gradle
 
-      - name: Make Gradlew Executable
+      - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Run Tests and Analyze
+      - name: Run Linter (Checkstyle) and Tests
+        run: ./gradlew check
+
+      - name: Analyze with SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew test jacocoTestReport sonar --info
+        run: ./gradlew sonar --info
