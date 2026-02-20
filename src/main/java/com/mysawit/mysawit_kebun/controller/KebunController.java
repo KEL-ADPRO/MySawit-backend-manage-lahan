@@ -18,7 +18,7 @@ public class KebunController {
 
     @GetMapping
     public ResponseEntity<List<Kebun>> getAllKebun() {
-        List<Kebun> kebunList = kebunService.getAllKebun();
+        List<Kebun> kebunList = kebunService.findAllKebun();
         return ResponseEntity.ok(kebunList);
     }
 

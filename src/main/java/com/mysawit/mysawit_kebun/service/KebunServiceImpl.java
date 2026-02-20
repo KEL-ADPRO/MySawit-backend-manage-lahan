@@ -14,7 +14,7 @@ public class KebunServiceImpl implements KebunService {
     private KebunRepository kebunRepository;
 
     @Override
-    public List<Kebun> getAllKebun() {
+    public List<Kebun> findAllKebun() {
         return kebunRepository.findAll();
     }
 

@@ -5,6 +5,6 @@ import com.mysawit.mysawit_kebun.model.Kebun;
 import java.util.List;
 
 public interface KebunService {
-    List<Kebun> getAllKebun();
+    List<Kebun> findAllKebun();
     Kebun createKebun(Kebun kebun);
 }
