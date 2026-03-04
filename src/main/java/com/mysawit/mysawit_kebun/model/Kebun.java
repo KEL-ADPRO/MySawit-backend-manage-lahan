@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -11,7 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Kebun {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -19,4 +19,9 @@ public class Kebun {
     @Column(nullable = false)
     private String nama;
 
+    @ElementCollection
+    @CollectionTable(name = "koordinat_kebun")
+    private List<Koordinat> koordinatList;
+
+    private double luas;
 }
