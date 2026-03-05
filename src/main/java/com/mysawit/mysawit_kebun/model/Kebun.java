@@ -19,9 +19,8 @@ public class Kebun {
     @Column(nullable = false)
     private String nama;
 
-    @ElementCollection
-    @CollectionTable(name = "koordinat_kebun")
-    private List<Koordinat> koordinatList;
-
     private double luas;
+
+    @Embedded
+    private Area area;
 }
