@@ -19,6 +19,7 @@ public class Kebun {
     @Column(nullable = false)
     private String nama;
 
+    @Column(nullable = false)
     private double luas;
 
     @Embedded

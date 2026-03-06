@@ -13,7 +13,6 @@ import java.util.UUID;
 public class KebunServiceImpl implements KebunService {
 
     private final KebunRepository kebunRepository;
-    private final IdGenerator idGenerator;
     private final OverlapChecker overlapChecker;
 
     @Override
@@ -42,6 +41,10 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public Kebun createKebun(Kebun kebun) {
+        if (kebunRepository.existsByNama(kebun.getNama())) {
+            throw new IllegalArgumentException("Kebun with name " + kebun.getNama() + " already exists.");
+        }
+
         List<Kebun> existingKebuns = kebunRepository.findAll();
         for (Kebun existingKebun : existingKebuns) {
             if (overlapChecker.checkOverlap(kebun.getArea(), existingKebun.getArea())) {

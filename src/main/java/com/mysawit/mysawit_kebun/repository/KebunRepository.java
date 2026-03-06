@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface KebunRepository extends JpaRepository<Kebun, UUID> {
     public Optional<Kebun> findByNama(String nama);
+    public boolean existsByNama(String nama);
 }

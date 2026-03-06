@@ -20,8 +20,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class KebunServiceTest {
     @Mock
-    private IdGenerator idGenerator;
-    @Mock
     private KebunRepository kebunRepository;
     @Mock
     private OverlapChecker overlapChecker;
@@ -85,6 +83,30 @@ public class KebunServiceTest {
 
         Kebun createdKebun = kebunService.createKebun(kebun);
         assertEquals("Kebun3", createdKebun.getNama());
+    }
+
+    @Test
+    public void testCreateKebunSameName() {
+        Koordinat koordinat1 = new Koordinat(200, 0);
+        Koordinat koordinat2 = new Koordinat(300, 0);
+        Koordinat koordinat3 = new Koordinat(300, 200);
+        Koordinat koordinat4 = new Koordinat(200, 200);
+        Area area = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        Kebun kebun = new Kebun();
+        UUID uuid = UUID.fromString("cc558c9c-1c39-460c-8860-71cc6cc63cc6");
+        kebun.setId(uuid);
+        kebun.setNama("Kebun1");
+        kebun.setLuas(100);
+        kebun.setArea(area);
+
+        when(kebunRepository.existsByNama("Kebun1")).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            kebunService.createKebun(kebun);
+        });
+
+        assertEquals("Kebun with name Kebun1 already exists.", exception.getMessage());
     }
 
     @Test
