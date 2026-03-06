@@ -2,13 +2,12 @@ package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Koordinat;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class overlapCheckerTest {
+public class OverlapCheckerTest {
 
     @BeforeEach
     public void setUp() {
