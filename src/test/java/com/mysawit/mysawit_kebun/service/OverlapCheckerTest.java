@@ -5,14 +5,15 @@ import com.mysawit.mysawit_kebun.model.Koordinat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OverlapCheckerTest {
 
     @BeforeEach
     public void setUp() {
-        OverlapChecker overlapChecker = new OverlapChecker;
     }
+
     @Test
     public void checkOverlapTrue() {
         Koordinat koordinat1 = new Koordinat(0, 0);
@@ -27,7 +28,8 @@ public class OverlapCheckerTest {
         koordinat4 = new Koordinat(0, 100);
         Area area2 = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        assertTrue(overlapChecker.check(area1, area2));
+        OverlapChecker overlapChecker = new OverlapChecker();
+        assertTrue(overlapChecker.checkOverlap(area1, area2));
     }
 
     @Test
@@ -44,6 +46,7 @@ public class OverlapCheckerTest {
         koordinat4 = new Koordinat(100, 100);
         Area area2 = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        assertTrue(overlapChecker.check(area1, area2));
+        OverlapChecker overlapChecker = new OverlapChecker();
+        assertFalse(overlapChecker.checkOverlap(area1, area2));
     }
 }

@@ -18,10 +18,8 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(KebunController.class)
 public class KebunControllerTest {
@@ -76,6 +74,43 @@ public class KebunControllerTest {
     }
 
     @Test
+    public void testGetKebunById() throws Exception {
+        when(kebunService.findById("aa558a9a-1a39-460a-8860-71aa6aa63aa6")).thenReturn(kebun1);
+
+        mockMvc.perform(get("/api/kebun/aa558a9a-1a39-460a-8860-71aa6aa63aa6"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nama").value("Kebun1"));
+    }
+
+    @Test
+    public void testGetKebunByIdNotFound() throws Exception {
+        String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
+        when(kebunService.findById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+
+        mockMvc.perform(get("/api/kebun/" + badId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun with ID " + badId + " not found."));
+    }
+
+    @Test
+    public void testGetKebunByName() throws Exception {
+        when(kebunService.findByName("Kebun2")).thenReturn(kebun2);
+
+        mockMvc.perform(get("/api/kebun/name/Kebun2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("bb558b9b-1b39-460b-8860-71bb6bb63bb6"));
+    }
+
+    @Test
+    public void testGetKebunByNameNotFound() throws Exception {
+        when(kebunService.findByName("Kebun4")).thenThrow(new IllegalArgumentException("Kebun with name Kebun4 not found."));
+
+        mockMvc.perform(get("/api/kebun/name/Kebun4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun with name Kebun4 not found."));
+    }
+
+    @Test
     public void testCreateKebun() throws Exception {
         when(kebunService.createKebun(any(Kebun.class))).thenReturn(kebun1);
 
@@ -88,11 +123,37 @@ public class KebunControllerTest {
 
     @Test
     public void testCreateKebunOverlap() throws Exception {
-        when(kebunService.createKebun(any(Kebun.class))).thenReturn(null);
+        when(kebunService.createKebun(any(Kebun.class)))
+                .thenThrow(new IllegalArgumentException("Kebun overlaps with an existing kebun."));
 
         mockMvc.perform(post("/api/kebun")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun overlaps with an existing kebun."));
+    }
+
+    @Test
+    public void testDeleteKebun() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+
+        when(kebunService.findById(id)).thenReturn(kebun1);
+        when(kebunService.deleteKebunById(kebun1)).thenReturn(kebun1);
+
+        mockMvc.perform(delete("/api/kebun/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Kebun deleted successfully"))
+                .andExpect(jsonPath("$.data.nama").value("Kebun1"));
+    }
+
+    @Test
+    public void testDeleteKebunNotFound() throws Exception {
+        String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
+
+        when(kebunService.findById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+
+        mockMvc.perform(delete("/api/kebun/" + badId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun with ID " + badId + " not found."));
     }
 }
