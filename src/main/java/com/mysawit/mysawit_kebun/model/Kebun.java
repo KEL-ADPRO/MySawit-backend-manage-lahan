@@ -11,7 +11,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Kebun {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -19,4 +18,9 @@ public class Kebun {
     @Column(nullable = false)
     private String nama;
 
+    @Column(nullable = false)
+    private double luas;
+
+    @Embedded
+    private Area area;
 }
