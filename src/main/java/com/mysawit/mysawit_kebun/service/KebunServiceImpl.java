@@ -3,7 +3,6 @@ package com.mysawit.mysawit_kebun.service;
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
-import com.mysawit.mysawit_kebun.model.Koordinat;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
