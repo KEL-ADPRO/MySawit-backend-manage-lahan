@@ -18,7 +18,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class KebunServiceTest {
@@ -179,8 +179,8 @@ public class KebunServiceTest {
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
 
         Kebun deletedKebun = kebunService.deleteKebunById(id);
-        List<Kebun> allKebun = kebunService.findAllKebun();
-        assertEquals(1, allKebun.size());
+        verify(kebunRepository, times(1)).delete(kebun1);
+        assertEquals("Kebun1", deletedKebun.getNama());
     }
 
     @Test
