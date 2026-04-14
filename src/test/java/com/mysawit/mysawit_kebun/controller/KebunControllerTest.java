@@ -1,6 +1,7 @@
 package com.mysawit.mysawit_kebun.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -113,7 +114,7 @@ public class KebunControllerTest {
 
     @Test
     public void testCreateKebun() throws Exception {
-        when(kebunService.createKebun(any(Kebun.class))).thenReturn(kebun1);
+        when(kebunService.createKebun(any(KebunRequestDTO.class))).thenReturn(kebun1);
 
         mockMvc.perform(post("/api/kebun")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +125,7 @@ public class KebunControllerTest {
 
     @Test
     public void testCreateKebunOverlap() throws Exception {
-        when(kebunService.createKebun(any(Kebun.class)))
+        when(kebunService.createKebun(any(KebunRequestDTO.class)))
                 .thenThrow(new IllegalArgumentException("Kebun overlaps with an existing kebun."));
 
         mockMvc.perform(post("/api/kebun")
@@ -162,13 +163,17 @@ public class KebunControllerTest {
     public void testUpdateKebunSuccess() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
+        KebunRequestDTO updateRequest = new KebunRequestDTO();
+        updateRequest.setNama("Kebun1 Updated");
+        updateRequest.setLuas(150);
+
         Kebun updatedData = new Kebun();
         updatedData.setId(UUID.fromString(id));
         updatedData.setNama("Kebun1 Updated");
         updatedData.setLuas(150);
         updatedData.setArea(kebun1.getArea());
 
-        when(kebunService.updateKebun(eq(id), any(Kebun.class))).thenReturn(updatedData);
+        when(kebunService.updateKebun(eq(id), any(KebunRequestDTO.class))).thenReturn(updatedData);
 
         mockMvc.perform(put("/api/kebun/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +187,10 @@ public class KebunControllerTest {
     public void testUpdateKebunSameName() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
-        when(kebunService.updateKebun(eq(id), any(Kebun.class)))
+        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        requestDTO.setNama("Kebun2");
+
+        when(kebunService.updateKebun(eq(id), any(KebunRequestDTO.class)))
                 .thenThrow(new IllegalArgumentException("Kebun with name Kebun2 already exists."));
 
         mockMvc.perform(put("/api/kebun/" + id)
@@ -196,7 +204,10 @@ public class KebunControllerTest {
     public void testUpdateKebunOverlap() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
-        when(kebunService.updateKebun(eq(id), any(Kebun.class)))
+        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        requestDTO.setNama("Kebun1 Updated");
+
+        when(kebunService.updateKebun(eq(id), any(KebunRequestDTO.class)))
                 .thenThrow(new IllegalArgumentException("Updated kebun overlaps with an existing kebun."));
 
         mockMvc.perform(put("/api/kebun/" + id)

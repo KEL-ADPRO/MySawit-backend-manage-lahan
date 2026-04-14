@@ -1,5 +1,8 @@
 package com.mysawit.mysawit_kebun.service;
 
+import com.mysawit.mysawit_kebun.DTO.AreaDTO;
+import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
+import com.mysawit.mysawit_kebun.DTO.KoordinatDTO;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -63,47 +66,37 @@ public class KebunServiceTest {
 
     @Test
     public void testCreateKebunSuccess() {
-        Koordinat koordinat1 = new Koordinat(200, 0);
-        Koordinat koordinat2 = new Koordinat(300, 0);
-        Koordinat koordinat3 = new Koordinat(300, 200);
-        Koordinat koordinat4 = new Koordinat(200, 200);
-        Area area = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
+        KoordinatDTO koordinat1 = new KoordinatDTO(200, 0);
+        KoordinatDTO koordinat2 = new KoordinatDTO(300, 0);
+        KoordinatDTO koordinat3 = new KoordinatDTO(300, 200);
+        KoordinatDTO koordinat4 = new KoordinatDTO(200, 200);
+        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        Kebun kebun = new Kebun();
-        UUID uuid = UUID.fromString("cc558c9c-1c39-460c-8860-71cc6cc63cc6");
-        kebun.setId(uuid);
-        kebun.setNama("Kebun3");
-        kebun.setLuas(100);
-        kebun.setArea(area);
+        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        requestDTO.setNama("Kebun3");
+        requestDTO.setLuas(100);
+        requestDTO.setArea(area);
+
+        Kebun expectedSavedKebun = new Kebun();
+        expectedSavedKebun.setNama("Kebun3");
 
         when(kebunRepository.findAll()).thenReturn(kebunList);
-        when(overlapChecker.checkOverlap(area, kebun1.getArea())).thenReturn(false);
-        when(overlapChecker.checkOverlap(area, kebun2.getArea())).thenReturn(false);
-        when(kebunRepository.save(kebun)).thenReturn(kebun);
+        when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(false);
+        when(kebunRepository.save(any(Kebun.class))).thenReturn(expectedSavedKebun);
 
-        Kebun createdKebun = kebunService.createKebun(kebun);
+        Kebun createdKebun = kebunService.createKebun(requestDTO);
         assertEquals("Kebun3", createdKebun.getNama());
     }
 
     @Test
     public void testCreateKebunSameName() {
-        Koordinat koordinat1 = new Koordinat(200, 0);
-        Koordinat koordinat2 = new Koordinat(300, 0);
-        Koordinat koordinat3 = new Koordinat(300, 200);
-        Koordinat koordinat4 = new Koordinat(200, 200);
-        Area area = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
-
-        Kebun kebun = new Kebun();
-        UUID uuid = UUID.fromString("cc558c9c-1c39-460c-8860-71cc6cc63cc6");
-        kebun.setId(uuid);
-        kebun.setNama("Kebun1");
-        kebun.setLuas(100);
-        kebun.setArea(area);
+        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        requestDTO.setNama("Kebun1");
 
         when(kebunRepository.existsByNama("Kebun1")).thenReturn(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            kebunService.createKebun(kebun);
+            kebunService.createKebun(requestDTO);
         });
 
         assertEquals("Kebun with name Kebun1 already exists.", exception.getMessage());
@@ -111,24 +104,22 @@ public class KebunServiceTest {
 
     @Test
     public void testCreateKebunOverlapped() {
-        Koordinat koordinat1 = new Koordinat(50, 50);
-        Koordinat koordinat2 = new Koordinat(150, 50);
-        Koordinat koordinat3 = new Koordinat(150, 150);
-        Koordinat koordinat4 = new Koordinat(50, 150);
-        Area area = new Area(koordinat1, koordinat2, koordinat3, koordinat4);
+        KoordinatDTO koordinat1 = new KoordinatDTO(50, 50);
+        KoordinatDTO koordinat2 = new KoordinatDTO(150, 50);
+        KoordinatDTO koordinat3 = new KoordinatDTO(150, 150);
+        KoordinatDTO koordinat4 = new KoordinatDTO(50, 150);
+        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        Kebun kebun = new Kebun();
-        UUID uuid = UUID.fromString("dd558d9d-1d39-460d-8860-71dd6dd63dd6");
-        kebun.setId(uuid);
-        kebun.setNama("Kebun4");
-        kebun.setLuas(2);
-        kebun.setArea(area);
+        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        requestDTO.setNama("Kebun4");
+        requestDTO.setLuas(100);
+        requestDTO.setArea(area);
 
         when(kebunRepository.findAll()).thenReturn(kebunList);
-        when(overlapChecker.checkOverlap(any(), any())).thenReturn(true);
+        when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            kebunService.createKebun(kebun);
+            kebunService.createKebun(requestDTO);
         });
 
         assertEquals("Kebun overlaps with an existing kebun.", exception.getMessage());
@@ -238,11 +229,16 @@ public class KebunServiceTest {
     void testUpdateNamaKebunSuccess() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        Kebun updatedData = new Kebun();
-        updatedData.setNama("Kebun1 Updated");
-        updatedData.setLuas(150);
-        Area newArea = new Area(new Koordinat(10, 10), new Koordinat(110, 10), new Koordinat(110, 110), new Koordinat(10, 110));
-        updatedData.setArea(newArea);
+        KoordinatDTO koordinat1 = new KoordinatDTO(200, 0);
+        KoordinatDTO koordinat2 = new KoordinatDTO(300, 0);
+        KoordinatDTO koordinat3 = new KoordinatDTO(300, 200);
+        KoordinatDTO koordinat4 = new KoordinatDTO(200, 200);
+        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        KebunRequestDTO kebun = new KebunRequestDTO();
+        kebun.setNama("Kebun1 Updated");
+        kebun.setLuas(150);
+        kebun.setArea(area);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.existsByNama("Kebun1 Updated")).thenReturn(false);
@@ -250,7 +246,7 @@ public class KebunServiceTest {
         when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(false);
         when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Kebun result = kebunService.updateKebun(uuid.toString(), updatedData);
+        Kebun result = kebunService.updateKebun(uuid.toString(), kebun);
 
         assertEquals("Kebun1 Updated", result.getNama());
         assertEquals(150, result.getLuas());
@@ -260,7 +256,7 @@ public class KebunServiceTest {
     void testUpdateKebunNameAlreadyExists() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        Kebun updatedData = new Kebun();
+        KebunRequestDTO updatedData = new KebunRequestDTO();
         updatedData.setNama("Kebun2");
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
@@ -277,16 +273,22 @@ public class KebunServiceTest {
     void testUpdateKebunOverlapped() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        Kebun updatedData = new Kebun();
+        KoordinatDTO koordinat1 = new KoordinatDTO(50, 0);
+        KoordinatDTO koordinat2 = new KoordinatDTO(150, 0);
+        KoordinatDTO koordinat3 = new KoordinatDTO(150, 100);
+        KoordinatDTO koordinat4 = new KoordinatDTO(50, 100);
+        AreaDTO overlappingArea = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        KebunRequestDTO updatedData = new KebunRequestDTO();
         updatedData.setNama("Kebun1 Updated");
-        Area overlappingArea = new Area(new Koordinat(50, 0), new Koordinat(150, 0), new Koordinat(150, 100), new Koordinat(50, 100));
+        updatedData.setLuas(150);
         updatedData.setArea(overlappingArea);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.existsByNama("Kebun1 Updated")).thenReturn(false);
         when(kebunRepository.findAll()).thenReturn(kebunList);
 
-        when(overlapChecker.checkOverlap(overlappingArea, kebun2.getArea())).thenReturn(true);
+        when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             kebunService.updateKebun(uuid.toString(), updatedData);

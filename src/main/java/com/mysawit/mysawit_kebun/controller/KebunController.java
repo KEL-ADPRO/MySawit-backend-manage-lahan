@@ -1,5 +1,6 @@
 package com.mysawit.mysawit_kebun.controller;
 
+import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.service.KebunService;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,9 @@ public class KebunController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createKebun(@RequestBody Kebun kebun) {
+    public ResponseEntity<?> createKebun(@RequestBody KebunRequestDTO requestDTO) {
         try {
-            Kebun savedKebun = kebunService.createKebun(kebun);
+            Kebun savedKebun = kebunService.createKebun(requestDTO);
             return ResponseEntity.ok(savedKebun);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -75,7 +76,7 @@ public class KebunController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateKebun(@PathVariable String id, @RequestBody Kebun updatedData) {
+    public ResponseEntity<?> updateKebun(@PathVariable String id, @RequestBody KebunRequestDTO updatedData) {
         try {
             Kebun updatedKebun = kebunService.updateKebun(id, updatedData);
             return ResponseEntity.ok(Map.of("message", "Kebun updated successfully", "data", updatedKebun));
