@@ -159,7 +159,7 @@ public class KebunControllerTest {
     }
 
     @Test
-    public void testUpdateKebun_Success() throws Exception {
+    public void testUpdateKebunSuccess() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
         Kebun updatedData = new Kebun();
