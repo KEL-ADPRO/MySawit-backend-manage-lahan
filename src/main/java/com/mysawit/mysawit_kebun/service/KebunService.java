@@ -10,4 +10,5 @@ public interface KebunService {
     Kebun findByName(String name);
     Kebun createKebun(Kebun kebun);
     Kebun deleteKebunById(Kebun kebun);
+    Kebun updateKebun(String id, Kebun updatedData);
 }

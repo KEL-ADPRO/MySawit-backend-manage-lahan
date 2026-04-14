@@ -60,4 +60,35 @@ public class KebunServiceImpl implements KebunService {
         return kebun;
     }
 
+    @Override
+    public Kebun updateKebun(String id, Kebun updatedData) {
+        UUID uuid = UUID.fromString(id);
+        Kebun existingKebun = kebunRepository.findById(uuid).orElse(null);
+
+        if (existingKebun == null) {
+            throw new IllegalArgumentException("Kebun with ID " + id + " not found.");
+        }
+
+        if (!existingKebun.getNama().equals(updatedData.getNama()) && kebunRepository.existsByNama(updatedData.getNama())) {
+            throw new IllegalArgumentException("Kebun with name " + updatedData.getNama() + " already exists.");
+        }
+
+        if (updatedData.getArea() != null) {
+            List<Kebun> existingKebuns = kebunRepository.findAll();
+            for (Kebun otherKebun: existingKebuns) {
+                if (!otherKebun.getId().equals(existingKebun.getId()) && overlapChecker.checkOverlap(updatedData.getArea(), otherKebun.getArea())) {
+                    throw new IllegalArgumentException("Updated kebun overlaps with an existing kebun.");
+                }
+            }
+        }
+
+        existingKebun.setNama(updatedData.getNama());
+        existingKebun.setLuas(updatedData.getLuas());
+        if (updatedData.getArea() != null) {
+            existingKebun.setArea(updatedData.getArea());
+        }
+
+        return kebunRepository.save(existingKebun);
+    }
+
 }
