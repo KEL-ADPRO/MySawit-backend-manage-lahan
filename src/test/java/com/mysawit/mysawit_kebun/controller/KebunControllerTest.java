@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -155,5 +156,53 @@ public class KebunControllerTest {
         mockMvc.perform(delete("/api/kebun/" + badId))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Kebun with ID " + badId + " not found."));
+    }
+
+    @Test
+    public void testUpdateKebun_Success() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+
+        Kebun updatedData = new Kebun();
+        updatedData.setId(UUID.fromString(id));
+        updatedData.setNama("Kebun1 Updated");
+        updatedData.setLuas(150);
+        updatedData.setArea(kebun1.getArea());
+
+        when(kebunService.updateKebun(eq(id), any(Kebun.class))).thenReturn(updatedData);
+
+        mockMvc.perform(put("/api/kebun/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedData)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Kebun updated successfully"))
+                .andExpect(jsonPath("$.data.nama").value("Kebun1 Updated"));
+    }
+
+    @Test
+    public void testUpdateKebunSameName() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+
+        when(kebunService.updateKebun(eq(id), any(Kebun.class)))
+                .thenThrow(new IllegalArgumentException("Kebun with name Kebun2 already exists."));
+
+        mockMvc.perform(put("/api/kebun/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(kebun1)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun with name Kebun2 already exists."));
+    }
+
+    @Test
+    public void testUpdateKebunOverlap() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+
+        when(kebunService.updateKebun(eq(id), any(Kebun.class)))
+                .thenThrow(new IllegalArgumentException("Updated kebun overlaps with an existing kebun."));
+
+        mockMvc.perform(put("/api/kebun/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(kebun1)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Updated kebun overlaps with an existing kebun."));
     }
 }
