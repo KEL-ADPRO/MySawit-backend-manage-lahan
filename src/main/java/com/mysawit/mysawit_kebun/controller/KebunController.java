@@ -73,4 +73,14 @@ public class KebunController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateKebun(@PathVariable String id, @RequestBody Kebun updatedData) {
+        try {
+            Kebun updatedKebun = kebunService.updateKebun(id, updatedData);
+            return ResponseEntity.ok(Map.of("message", "Kebun updated successfully", "data", updatedKebun));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
