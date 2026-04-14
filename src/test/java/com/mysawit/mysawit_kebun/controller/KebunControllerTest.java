@@ -139,8 +139,7 @@ public class KebunControllerTest {
     public void testDeleteKebun() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
-        when(kebunService.findById(id)).thenReturn(kebun1);
-        when(kebunService.deleteKebunById(kebun1)).thenReturn(kebun1);
+        when(kebunService.deleteKebunById(id)).thenReturn(kebun1);
 
         mockMvc.perform(delete("/api/kebun/" + id))
                 .andExpect(status().isOk())

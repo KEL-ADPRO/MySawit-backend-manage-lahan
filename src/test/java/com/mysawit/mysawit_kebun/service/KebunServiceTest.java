@@ -173,56 +173,27 @@ public class KebunServiceTest {
 
     @Test
     public void testDeleteKebunById() {
-        UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
+        String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(id);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
-        when(kebunRepository.findAll()).thenReturn(Collections.singletonList(kebun2));
 
-        Kebun kebun = kebunService.findById("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
-        kebunService.deleteKebunById(kebun);
+        Kebun deletedKebun = kebunService.deleteKebunById(id);
         List<Kebun> allKebun = kebunService.findAllKebun();
         assertEquals(1, allKebun.size());
     }
 
     @Test
     public void testDeleteKebunByIdIfNotExist() {
-        Kebun kebun = new Kebun();
-        UUID uuid = UUID.fromString("dd558d9d-1d39-460d-8860-71dd6dd63dd6");
-        kebun.setId(uuid);
-        kebun.setNama("Kebun4");
-        kebun.setLuas(100);
-        Area area = new Area(new Koordinat(300, 0), new Koordinat(400, 0), new Koordinat(400, 100), new Koordinat(300, 100));
-        kebun.setArea(area);
+        String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(id);
 
-        when(kebunRepository.findAll()).thenReturn(kebunList);
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.empty());
 
-        kebunService.deleteKebunById(kebun);
-        List<Kebun> allKebun = kebunService.findAllKebun();
-        assertEquals(2, allKebun.size());
-    }
-
-    @Test
-    public void testDeleteKebunByIdIfEmpty() {
-        when(kebunRepository.findAll())
-                .thenReturn(kebunList)
-                .thenReturn(Collections.emptyList());
-
-        List<Kebun> allKebun = kebunService.findAllKebun();
-        for (Kebun kebun : allKebun) {
-            kebunService.deleteKebunById(kebun);
-        }
-
-        Kebun kebun = new Kebun();
-        UUID uuid = UUID.fromString("dd558d9d-1d39-460d-8860-71dd6dd63dd6");
-        kebun.setId(uuid);
-        kebun.setNama("Kebun4");
-        kebun.setLuas(100);
-        Area area = new Area(new Koordinat(300, 0), new Koordinat(400, 0), new Koordinat(400, 100), new Koordinat(300, 100));
-        kebun.setArea(area);
-
-        kebunService.deleteKebunById(kebun);
-        allKebun = kebunService.findAllKebun();
-        assertEquals(0, allKebun.size());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            kebunService.deleteKebunById(id);
+        });
+        assertEquals("Kebun with ID " + id + " not found.", exception.getMessage());
     }
 
     @Test

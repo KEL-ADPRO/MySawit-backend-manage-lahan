@@ -73,9 +73,11 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public Kebun deleteKebunById(Kebun kebun) {
-        kebunRepository.delete(kebun);
-        return kebun;
+    public Kebun deleteKebunById(String id) {
+        UUID uuid = UUID.fromString(id);
+        Kebun existingKebun = kebunRepository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + id + " not found."));
+        kebunRepository.delete(existingKebun);
+        return existingKebun;
     }
 
     private void updateNameValidation(Kebun existingKebun, String newName) {
