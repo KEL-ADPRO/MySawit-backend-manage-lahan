@@ -1,10 +1,12 @@
 package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
+import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,7 @@ public class KebunServiceImpl implements KebunService {
 
     private final KebunRepository kebunRepository;
     private final OverlapChecker overlapChecker;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public List<Kebun> findAllKebun() {
@@ -113,4 +116,17 @@ public class KebunServiceImpl implements KebunService {
         return kebunRepository.save(existingKebun);
     }
 
+    @Override
+    public Kebun assignMandor(String kebunId, String mandorId) {
+        UUID kebunUuid = UUID.fromString(kebunId);
+        Kebun existingKebun = kebunRepository.findById(kebunUuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + kebunId + " not found."));
+
+        existingKebun.setMandorId(mandorId);
+        Kebun savedKebun = kebunRepository.save(existingKebun);
+
+        MandorAssignmentEvent event = new MandorAssignmentEvent(mandorId, kebunId, savedKebun.getNama());
+        applicationEventPublisher.publishEvent(event);
+
+        return savedKebun;
+    }
 }

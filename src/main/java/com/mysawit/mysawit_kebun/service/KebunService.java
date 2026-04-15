@@ -12,4 +12,5 @@ public interface KebunService {
     Kebun createKebun(KebunRequestDTO requestDTO);
     Kebun deleteKebunById(String id);
     Kebun updateKebun(String id, KebunRequestDTO requestDTO);
+    Kebun assignMandor(String kebunId, String mandorId);
 }

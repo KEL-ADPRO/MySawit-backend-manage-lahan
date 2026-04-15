@@ -23,4 +23,7 @@ public class Kebun {
 
     @Embedded
     private Area area;
+
+    @Column
+    private String mandorId;
 }

@@ -281,7 +281,7 @@ public class KebunServiceTest {
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Kebun updatedKebun = kebunRepository.assignMandor(kebunId, mandorId);
+        Kebun updatedKebun = kebunService.assignMandor(kebunId, mandorId);
 
         assertEquals("mandor123", updatedKebun.getMandorId());
         verify(kebunRepository, times(1)).save(any(Kebun.class));
