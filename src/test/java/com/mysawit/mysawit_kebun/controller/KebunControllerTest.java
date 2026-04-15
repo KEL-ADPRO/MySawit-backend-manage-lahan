@@ -8,7 +8,6 @@ import com.mysawit.mysawit_kebun.model.Koordinat;
 import com.mysawit.mysawit_kebun.service.KebunService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
