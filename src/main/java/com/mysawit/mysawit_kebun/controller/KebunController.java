@@ -84,4 +84,14 @@ public class KebunController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PatchMapping("/{kebunId}/supir/{supirId}")
+    public ResponseEntity<?> assignSupir(@PathVariable String kebunId, @PathVariable String supirId) {
+        try {
+            Kebun updatedKebun = kebunService.assignSupir(kebunId, supirId);
+            return ResponseEntity.ok(Map.of("message", "Supir Truk assigned successfully", "data", updatedKebun));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

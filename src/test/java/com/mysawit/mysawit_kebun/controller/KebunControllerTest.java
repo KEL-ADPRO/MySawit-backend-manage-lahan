@@ -266,7 +266,7 @@ public class KebunControllerTest {
         mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Supir Truk assigned successfully"))
-                .andExpect(jsonPath("$.data.supirId[0]").value(supirId));
+                .andExpect(jsonPath("$.data.supirIds[0]").value(supirId));
     }
 
     @Test
