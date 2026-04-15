@@ -320,7 +320,7 @@ public class KebunServiceTest {
             kebunService.assignSupir(kebunId, supirId);
         });
 
-        assertEquals("Supir Truk already assigned to this kebun.", exception.getMessage());
+        assertEquals("Supir Truk is already assigned to this kebun.", exception.getMessage());
     }
 
 }

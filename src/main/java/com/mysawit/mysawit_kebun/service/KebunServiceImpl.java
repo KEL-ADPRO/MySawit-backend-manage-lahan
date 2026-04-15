@@ -2,6 +2,7 @@ package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
+import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
@@ -128,5 +129,22 @@ public class KebunServiceImpl implements KebunService {
         applicationEventPublisher.publishEvent(event);
 
         return savedKebun;
+    }
+
+    @Override
+    public Kebun assignSupir(String kebunId, String supirId) {
+        UUID kebunUuid = UUID.fromString(kebunId);
+        Kebun existingKebun = kebunRepository.findById(kebunUuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + kebunId + " not found."));
+
+        if (existingKebun.getSupirIds().contains(supirId)) {
+            throw new IllegalArgumentException("Supir Truk is already assigned to this kebun.");
+        }
+
+        existingKebun.getSupirIds().add(supirId);
+
+        SupirAssignmentEvent event = new SupirAssignmentEvent(supirId, kebunId, existingKebun.getNama());
+        applicationEventPublisher.publishEvent(event);
+
+        return kebunRepository.save(existingKebun);
     }
 }
