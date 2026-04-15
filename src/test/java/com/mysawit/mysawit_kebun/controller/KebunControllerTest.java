@@ -215,4 +215,36 @@ public class KebunControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Updated kebun overlaps with an existing kebun."));
     }
+
+    @Test
+    public void testAssignMandorSucces() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        String mandorId = "mandor123";
+
+        Kebun updatedKebun = new Kebun();
+        updatedKebun.setId(UUID.fromString(id));
+        updatedKebun.setNama("Kebun1");
+        updatedKebun.setLuas(100);
+        updatedKebun.setArea(kebun1.getArea());
+        updatedKebun.setMandorId(mandorId);
+
+        when(kebunService.assignMandor(id, mandorId)).thenReturn(updatedKebun);
+
+        mockMvc.perform(patch("/api/kebun/" + id + "/mandor/" + mandorId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Mandor assigned successfully"))
+                .andExpect(jsonPath("$.data.mandorId").value(mandorId));
+    }
+
+    @Test
+    public void testAssignmandorKebunNotFound() throws Exception {
+        String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
+        String mandorId = "mandor123";
+
+        when(kebunService.assignMandor(badId, mandorId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+
+        mockMvc.perform(patch("/api/kebun/" + badId + "/mandor/" + mandorId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Kebun with ID " + badId + " not found."));
+    }
 }
