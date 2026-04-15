@@ -288,4 +288,39 @@ public class KebunServiceTest {
         verify(applicationEventPublisher, times(1)).publishEvent(any(MandorAssignmentEvent.class));
     }
 
+    @Test
+    void testAssignSupirSuccess() {
+        String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(kebunId);
+        String supirId = "supir123";
+
+        kebun1.setSupirIds(new ArrayList<>());
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Kebun updatedKebun = kebunService.assignSupir(kebunId, supirId);
+
+        assertTrue(updatedKebun.getSupirIds().contains(supirId));
+        assertEquals(1, updatedKebun.getSupirIds().size());
+        verify(kebunRepository, times(1)).save(any(Kebun.class));
+    }
+
+    @Test
+    void testAssignSupirAlreadyAssigned() {
+        String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(kebunId);
+        String supirId = "supir123";
+
+        kebun1.setSupirIds(new ArrayList<>(List.of(supirId)));
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            kebunService.assignSupir(kebunId, supirId);
+        });
+
+        assertEquals("Supir Truk already assigned to this kebun.", exception.getMessage());
+    }
+
 }
