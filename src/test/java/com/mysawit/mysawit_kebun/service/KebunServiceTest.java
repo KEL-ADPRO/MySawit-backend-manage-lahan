@@ -3,6 +3,7 @@ package com.mysawit.mysawit_kebun.service;
 import com.mysawit.mysawit_kebun.DTO.AreaDTO;
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.DTO.KoordinatDTO;
+import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.*;
 
@@ -26,6 +28,8 @@ public class KebunServiceTest {
     private KebunRepository kebunRepository;
     @Mock
     private OverlapChecker overlapChecker;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
     @InjectMocks
     private KebunServiceImpl kebunService;
 
@@ -266,6 +270,22 @@ public class KebunServiceTest {
         });
 
         assertEquals("Updated kebun overlaps with an existing kebun.", exception.getMessage());
+    }
+
+    @Test
+    void testAssignMandorAndPublishSuccess() {
+        String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(kebunId);
+        String mandorId = "mandor123";
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Kebun updatedKebun = kebunRepository.assignMandor(kebunId, mandorId);
+
+        assertEquals("mandor123", updatedKebun.getMandorId());
+        verify(kebunRepository, times(1)).save(any(Kebun.class));
+        verify(applicationEventPublisher, times(1)).publishEvent(any(MandorAssignmentEvent.class));
     }
 
 }
