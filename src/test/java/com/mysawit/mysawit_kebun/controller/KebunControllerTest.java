@@ -8,6 +8,7 @@ import com.mysawit.mysawit_kebun.model.Koordinat;
 import com.mysawit.mysawit_kebun.service.KebunService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -246,5 +247,37 @@ public class KebunControllerTest {
         mockMvc.perform(patch("/api/kebun/" + badId + "/mandor/" + mandorId))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Kebun with ID " + badId + " not found."));
+    }
+
+    @Test
+    public void testAssignSupirSuccess() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        String supirId = "supir123";
+
+        Kebun updatedKebun = new Kebun();
+        updatedKebun.setId(UUID.fromString(id));
+        updatedKebun.setNama("Kebun1");
+        updatedKebun.setLuas(100);
+        updatedKebun.setArea(kebun1.getArea());
+        updatedKebun.setSupirIds(List.of(supirId));
+
+        when(kebunService.assignSupir(id, supirId)).thenReturn(updatedKebun);
+
+        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Supir Truk assigned successfully"))
+                .andExpect(jsonPath("$.data.supirId[0]").value(supirId));
+    }
+
+    @Test
+    public void testAssignSupirAlreadyAssigned() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        String supirId = "supir123";
+
+        when(kebunService.assignSupir(id, supirId)).thenThrow(new IllegalArgumentException("Supir Truk is already assigned to this kebun."));
+
+        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Supir Truk is already assigned to this kebun."));
     }
 }
