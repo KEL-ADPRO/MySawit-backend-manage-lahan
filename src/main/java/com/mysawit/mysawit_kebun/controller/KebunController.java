@@ -74,4 +74,14 @@ public class KebunController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PatchMapping("/{kebunId}/mandor/{mandorId}")
+    public ResponseEntity<?> assignMandor(@PathVariable String kebunId, @PathVariable String mandorId) {
+        try {
+            Kebun updatedKebun = kebunService.assignMandor(kebunId, mandorId);
+            return ResponseEntity.ok(Map.of("message", "Mandor assigned successfully", "data", updatedKebun));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
