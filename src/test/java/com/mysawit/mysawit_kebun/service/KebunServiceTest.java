@@ -4,6 +4,7 @@ import com.mysawit.mysawit_kebun.DTO.AreaDTO;
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.DTO.KoordinatDTO;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
+import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -286,6 +287,49 @@ public class KebunServiceTest {
         assertEquals("mandor123", updatedKebun.getMandorId());
         verify(kebunRepository, times(1)).save(any(Kebun.class));
         verify(applicationEventPublisher, times(1)).publishEvent(any(MandorAssignmentEvent.class));
+    }
+
+    @Test
+    public void testAssignMandorFromAnotherKebun() {
+        String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
+        UUID targetUuid = UUID.fromString(targetKebunId);
+        String mandorId = "mandor123";
+
+        kebun1.setMandorId(mandorId);
+        kebun2.setId(targetUuid);
+        kebun2.setMandorId(null);
+
+        when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
+        when(kebunRepository.findAll()).thenReturn(List.of(kebun1, kebun2));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Kebun updatedTargetKebun = kebunService.assignMandor(targetKebunId, mandorId);
+
+        assertNull(kebun1.getMandorId(), "Mandor should be removed from old kebun.");
+        assertEquals(mandorId, updatedTargetKebun.getMandorId(), "Mandor should be assigned to new kebun.");
+
+        verify(applicationEventPublisher, times(1)).publishEvent(any(MandorRemovalEvent.class));
+        verify(applicationEventPublisher, times(1)).publishEvent(any(MandorAssignmentEvent.class));
+    }
+
+    @Test
+    public void testAssignMandorToKebunWithOtherMandor() {
+        String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
+        UUID targetUuid = UUID.fromString(targetKebunId);
+        String mandorId = "mandor123";
+
+        kebun1.setMandorId("otherMandor");
+        kebun2.setId(targetUuid);
+        kebun2.setMandorId(null);
+
+        when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
+        when(kebunRepository.findAll()).thenReturn(List.of(kebun1, kebun2));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            kebunService.assignMandor(targetKebunId, mandorId);
+        });
+
+        assertEquals("This kebun already has a Mandor. Move that Mandor first.", exception.getMessage());
     }
 
     @Test
