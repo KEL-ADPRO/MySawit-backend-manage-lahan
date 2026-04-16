@@ -201,7 +201,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testUpdateNamaKebunSuccess() {
+    public void testUpdateNamaKebunSuccess() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
         KoordinatDTO koordinat1 = new KoordinatDTO(200, 0);
@@ -228,7 +228,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testUpdateKebunNameAlreadyExists() {
+    public void testUpdateKebunNameAlreadyExists() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
         KebunRequestDTO updatedData = new KebunRequestDTO();
@@ -245,7 +245,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testUpdateKebunOverlapped() {
+    public void testUpdateKebunOverlapped() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
         KoordinatDTO koordinat1 = new KoordinatDTO(50, 0);
@@ -273,7 +273,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testAssignMandorAndPublishSuccess() {
+    public void testAssignMandorAndPublishSuccess() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String mandorId = "mandor123";
@@ -289,7 +289,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testAssignSupirSuccess() {
+    public void testAssignSupirSuccess() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -307,7 +307,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    void testAssignSupirAlreadyAssigned() {
+    public void testAssignSupirAlreadyAssigned() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -321,6 +321,40 @@ public class KebunServiceTest {
         });
 
         assertEquals("Supir Truk is already assigned to this kebun.", exception.getMessage());
+    }
+
+    @Test
+    public void testRemoveSupirSuccess() {
+        String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(kebunId);
+        String supirId = "supir123";
+
+        kebun1.setSupirIds(new ArrayList<>(List.of(supirId)));
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Kebun updatedKebun = kebunService.removeSupir(kebunId, supirId);
+
+        assertFalse(updatedKebun.getSupirIds().contains(supirId));
+        verify(kebunRepository, times(1)).save(any(Kebun.class));
+    }
+
+    @Test
+    public void testRemoveSupirNotAssigned() {
+        String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(kebunId);
+        String supirId = "supir123";
+
+        kebun1.setSupirIds(new ArrayList<>());
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            kebunService.removeSupir(kebunId, supirId);
+        });
+
+        assertEquals("Supir Truk is not assigned to this kebun.", exception.getMessage());
     }
 
 }
