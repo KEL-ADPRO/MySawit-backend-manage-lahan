@@ -2,16 +2,19 @@ package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
+import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -30,10 +33,7 @@ public class KebunServiceImpl implements KebunService {
     @Override
     public Kebun findById(String id) {
         UUID uuid = UUID.fromString(id);
-        Kebun foundkebun = kebunRepository.findById(uuid).orElse(null);
-        if (foundkebun == null) {
-            throw new IllegalArgumentException("Kebun with ID " + id + " not found.");
-        }
+        Kebun foundkebun = kebunRepository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + id + " not found."));
         return foundkebun;
     }
 
@@ -78,8 +78,7 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public Kebun deleteKebunById(String id) {
-        UUID uuid = UUID.fromString(id);
-        Kebun existingKebun = kebunRepository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + id + " not found."));
+        Kebun existingKebun = findById(id);
         kebunRepository.delete(existingKebun);
         return existingKebun;
     }
@@ -101,8 +100,7 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public Kebun updateKebun(String id, KebunRequestDTO requestDTO) {
-        UUID uuid = UUID.fromString(id);
-        Kebun existingKebun = kebunRepository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + id + " not found."));
+        Kebun existingKebun = findById(id);
 
         updateNameValidation(existingKebun, requestDTO.getNama());
 
@@ -118,24 +116,45 @@ public class KebunServiceImpl implements KebunService {
         return kebunRepository.save(existingKebun);
     }
 
+    private void validateTargetKebunAvailability(Kebun targetKebun, String mandorId) {
+        if (targetKebun.getMandorId() != null && !targetKebun.getMandorId().equals(mandorId)) {
+            throw new IllegalArgumentException("Kebun already has a different Mandor assigned. Reassign that Mandor first.");
+        }
+    }
+
+    private void removeMandorFromOldKebun(Kebun oldKebun) {
+        String mandorIdToRemove = oldKebun.getMandorId();
+        oldKebun.setMandorId(null);
+        kebunRepository.save(oldKebun);
+
+        MandorRemovalEvent unassignEvent = new MandorRemovalEvent(mandorIdToRemove, oldKebun.getId().toString());
+        applicationEventPublisher.publishEvent(unassignEvent);
+    }
+
     @Override
-    public Kebun assignMandor(String kebunId, String mandorId) {
-        UUID kebunUuid = UUID.fromString(kebunId);
-        Kebun existingKebun = kebunRepository.findById(kebunUuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + kebunId + " not found."));
+    @Transactional
+    public Kebun assignMandor(String targetKebunId, String mandorId) {
+        Kebun targetKebun = findById(targetKebunId);
 
-        existingKebun.setMandorId(mandorId);
-        Kebun savedKebun = kebunRepository.save(existingKebun);
+        if (mandorId.equals(targetKebun.getMandorId())) {
+            return targetKebun;
+        }
 
-        MandorAssignmentEvent event = new MandorAssignmentEvent(mandorId, kebunId, savedKebun.getNama());
-        applicationEventPublisher.publishEvent(event);
+        validateTargetKebunAvailability(targetKebun, mandorId);
+
+        Optional<Kebun> existingMandorAssignment = kebunRepository.findByMandorId(mandorId);
+        existingMandorAssignment.ifPresent(this::removeMandorFromOldKebun);
+
+        targetKebun.setMandorId(mandorId);
+        Kebun savedKebun = kebunRepository.save(targetKebun);
+        applicationEventPublisher.publishEvent(new MandorAssignmentEvent(mandorId, targetKebunId, savedKebun.getNama()));
 
         return savedKebun;
     }
 
     @Override
     public Kebun assignSupir(String kebunId, String supirId) {
-        UUID kebunUuid = UUID.fromString(kebunId);
-        Kebun existingKebun = kebunRepository.findById(kebunUuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + kebunId + " not found."));
+        Kebun existingKebun = findById(kebunId);
 
         if (existingKebun.getSupirIds().contains(supirId)) {
             throw new IllegalArgumentException("Supir Truk is already assigned to this kebun.");
@@ -151,8 +170,7 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public Kebun removeSupir(String kebunId, String supirId) {
-        UUID kebunUuid = UUID.fromString(kebunId);
-        Kebun existingKebun = kebunRepository.findById(kebunUuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + kebunId + " not found."));
+        Kebun existingKebun = findById(kebunId);
 
         if (!existingKebun.getSupirIds().contains(supirId)) {
             throw new IllegalArgumentException("Supir Truk is not assigned to this kebun.");

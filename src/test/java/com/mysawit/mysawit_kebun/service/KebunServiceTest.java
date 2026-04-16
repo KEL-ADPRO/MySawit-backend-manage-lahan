@@ -300,7 +300,7 @@ public class KebunServiceTest {
         kebun2.setMandorId(null);
 
         when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
-        when(kebunRepository.findAll()).thenReturn(List.of(kebun1, kebun2));
+        when(kebunRepository.findByMandorId(mandorId)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Kebun updatedTargetKebun = kebunService.assignMandor(targetKebunId, mandorId);
@@ -318,18 +318,16 @@ public class KebunServiceTest {
         UUID targetUuid = UUID.fromString(targetKebunId);
         String mandorId = "mandor123";
 
-        kebun1.setMandorId("otherMandor");
+        kebun2.setMandorId("otherMandor");
         kebun2.setId(targetUuid);
-        kebun2.setMandorId(null);
 
         when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
-        when(kebunRepository.findAll()).thenReturn(List.of(kebun1, kebun2));
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             kebunService.assignMandor(targetKebunId, mandorId);
         });
 
-        assertEquals("This kebun already has a Mandor. Move that Mandor first.", exception.getMessage());
+        assertEquals("Kebun already has a different Mandor assigned. Reassign that Mandor first.", exception.getMessage());
     }
 
     @Test
