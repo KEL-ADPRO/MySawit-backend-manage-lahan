@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -278,5 +279,35 @@ public class KebunControllerTest {
         mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Supir Truk is already assigned to this kebun."));
+    }
+
+    @Test public void testRemoveSupirSuccess() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        String supirId = "supir123";
+
+        Kebun updatedKebun = new Kebun();
+        updatedKebun.setId(UUID.fromString(id));
+        updatedKebun.setNama("Kebun1");
+        updatedKebun.setLuas(100);
+        updatedKebun.setArea(kebun1.getArea());
+        updatedKebun.setSupirIds(new ArrayList<>(List.of(supirId)));
+
+        when(kebunService.removeSupir(id, supirId)).thenReturn(updatedKebun);
+
+        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Supir Truk removed successfully"))
+                .andExpect(jsonPath("$.data.supirIds.length()").value(0));
+    }
+
+     @Test public void testRemoveSupirNotAssigned() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        String supirId = "supir123";
+
+        when(kebunService.removeSupir(id, supirId)).thenThrow(new IllegalArgumentException("Supir Truk is not assigned to this kebun."));
+
+        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Supir Truk is not assigned to this kebun."));
     }
 }
