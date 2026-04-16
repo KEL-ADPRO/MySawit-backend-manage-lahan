@@ -94,4 +94,14 @@ public class KebunController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{kebunId}/supir/{supirId}")
+    public ResponseEntity<?> removeSupir(@PathVariable String kebunId, @PathVariable String supirId) {
+        try {
+            Kebun updatedKebun = kebunService.removeSupir(kebunId, supirId);
+            return ResponseEntity.ok(Map.of("message", "Supir Truk removed successfully", "data", updatedKebun));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

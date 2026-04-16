@@ -290,7 +290,7 @@ public class KebunControllerTest {
         updatedKebun.setNama("Kebun1");
         updatedKebun.setLuas(100);
         updatedKebun.setArea(kebun1.getArea());
-        updatedKebun.setSupirIds(new ArrayList<>(List.of(supirId)));
+        updatedKebun.setSupirIds(new ArrayList<>());
 
         when(kebunService.removeSupir(id, supirId)).thenReturn(updatedKebun);
 
