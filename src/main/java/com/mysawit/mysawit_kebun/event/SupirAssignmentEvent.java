@@ -1,9 +1,9 @@
 package com.mysawit.mysawit_kebun.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class SupirAssignmentEvent {
     private final String supirId;

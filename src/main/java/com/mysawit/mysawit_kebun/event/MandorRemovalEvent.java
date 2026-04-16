@@ -5,7 +5,5 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class SupirRemovalEvent {
-    private final String supirId;
-    private final String kebunId;
+public class MandorRemovalEvent {
 }
