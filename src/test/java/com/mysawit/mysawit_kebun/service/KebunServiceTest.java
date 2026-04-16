@@ -5,6 +5,8 @@ import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.DTO.KoordinatDTO;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
+import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
+import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -338,6 +340,7 @@ public class KebunServiceTest {
 
         kebun1.setSupirIds(new ArrayList<>());
 
+        when(kebunRepository.findBySupirIdsContaining(supirId)).thenReturn(Optional.empty());
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -346,6 +349,7 @@ public class KebunServiceTest {
         assertTrue(updatedKebun.getSupirIds().contains(supirId));
         assertEquals(1, updatedKebun.getSupirIds().size());
         verify(kebunRepository, times(1)).save(any(Kebun.class));
+        verify(applicationEventPublisher, times(1)).publishEvent(any(SupirAssignmentEvent.class));
     }
 
     @Test
@@ -358,11 +362,33 @@ public class KebunServiceTest {
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            kebunService.assignSupir(kebunId, supirId);
-        });
+        Kebun updatedKebun = kebunService.assignSupir(kebunId, supirId);
 
-        assertEquals("Supir Truk is already assigned to this kebun.", exception.getMessage());
+        assertEquals(1, updatedKebun.getSupirIds().size());
+        verify(kebunRepository, times(0)).save(any(Kebun.class));
+        verify(applicationEventPublisher, times(0)).publishEvent(any(SupirAssignmentEvent.class));
+    }
+
+    @Test
+    public void testAssignSupirFromAnotherKebun() {
+        String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
+        UUID targetUuid = UUID.fromString(targetKebunId);
+        String supirId = "supir123";
+
+        kebun1.setSupirIds(new ArrayList<>(List.of(supirId)));
+        kebun2.setSupirIds(new ArrayList<>());
+
+        when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
+        when(kebunRepository.findBySupirIdsContaining(supirId)).thenReturn(Optional.of(kebun1));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Kebun updatedTargetKebun = kebunService.assignSupir(targetKebunId, supirId);
+
+        assertFalse(kebun1.getSupirIds().contains(supirId), "Supir should be removed from old kebun.");
+        assertTrue(updatedTargetKebun.getSupirIds().contains(supirId), "Supir should be assigned to new kebun.");
+
+        verify(applicationEventPublisher, times(1)).publishEvent(any(SupirRemovalEvent.class));
+        verify(applicationEventPublisher, times(1)).publishEvent(any(SupirAssignmentEvent.class));
     }
 
     @Test
@@ -380,6 +406,7 @@ public class KebunServiceTest {
 
         assertFalse(updatedKebun.getSupirIds().contains(supirId));
         verify(kebunRepository, times(1)).save(any(Kebun.class));
+        verify(applicationEventPublisher, times(1)).publishEvent(any(SupirRemovalEvent.class));
     }
 
     @Test

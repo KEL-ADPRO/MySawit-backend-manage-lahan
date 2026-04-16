@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -127,8 +128,7 @@ public class KebunServiceImpl implements KebunService {
         oldKebun.setMandorId(null);
         kebunRepository.save(oldKebun);
 
-        MandorRemovalEvent unassignEvent = new MandorRemovalEvent(mandorIdToRemove, oldKebun.getId().toString());
-        applicationEventPublisher.publishEvent(unassignEvent);
+        applicationEventPublisher.publishEvent(new MandorRemovalEvent(mandorIdToRemove, oldKebun.getId().toString()));
     }
 
     @Override
@@ -152,20 +152,34 @@ public class KebunServiceImpl implements KebunService {
         return savedKebun;
     }
 
-    @Override
-    public Kebun assignSupir(String kebunId, String supirId) {
-        Kebun existingKebun = findById(kebunId);
+    private void removeSupirFromOldKebun(Kebun oldKebun, String supirId) {
+        oldKebun.getSupirIds().remove(supirId);
+        kebunRepository.save(oldKebun);
+        applicationEventPublisher.publishEvent(new SupirRemovalEvent(supirId, oldKebun.getId().toString()));
+    }
 
-        if (existingKebun.getSupirIds().contains(supirId)) {
-            throw new IllegalArgumentException("Supir Truk is already assigned to this kebun.");
+    @Override
+    @Transactional
+    public Kebun assignSupir(String targetKebunId, String supirId) {
+        Kebun targetKebun = findById(targetKebunId);
+
+        if (targetKebun.getSupirIds() == null) {
+            targetKebun.setSupirIds(new ArrayList<>());
         }
 
-        existingKebun.getSupirIds().add(supirId);
+        if (targetKebun.getSupirIds().contains(supirId)) {
+            return targetKebun;
+        }
 
-        SupirAssignmentEvent event = new SupirAssignmentEvent(supirId, kebunId, existingKebun.getNama());
-        applicationEventPublisher.publishEvent(event);
+        Optional<Kebun> existingSupirAssignment = kebunRepository.findBySupirIdsContaining(supirId);
+        existingSupirAssignment.ifPresent(oldKebun -> removeSupirFromOldKebun(oldKebun, supirId));
 
-        return kebunRepository.save(existingKebun);
+        targetKebun.getSupirIds().add(supirId);
+        Kebun savedKebun = kebunRepository.save(targetKebun);
+
+        applicationEventPublisher.publishEvent(new SupirAssignmentEvent(supirId, targetKebunId, savedKebun.getNama()));
+
+        return savedKebun;
     }
 
     @Override
