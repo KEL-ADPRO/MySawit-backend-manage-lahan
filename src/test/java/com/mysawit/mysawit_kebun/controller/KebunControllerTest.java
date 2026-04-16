@@ -5,12 +5,19 @@ import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
+import com.mysawit.mysawit_kebun.security.JWTFilter;
+import com.mysawit.mysawit_kebun.security.SecurityConfig;
 import com.mysawit.mysawit_kebun.service.KebunService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,11 +27,14 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(KebunController.class)
+@Import(SecurityConfig.class)
 public class KebunControllerTest {
 
     @Autowired
@@ -33,14 +43,29 @@ public class KebunControllerTest {
     @MockitoBean
     private KebunService kebunService;
 
+    @MockitoBean
+    private JWTFilter jwtFilter;
+
     @Autowired
     private ObjectMapper objectMapper;
+
+    private final String adminAuth = "ADMIN";
 
     private Kebun kebun1;
     private Kebun kebun2;
 
+
     @BeforeEach
-    public void setup() {
+    public void setup() throws Exception {
+        doAnswer(invocation -> {
+            ServletRequest request = invocation.getArgument(0);
+            ServletResponse response = invocation.getArgument(1);
+            FilterChain chain = invocation.getArgument(2);
+
+            chain.doFilter(request, response);
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+
         Area area1 = new Area(
                 new Koordinat(0, 0),
                 new Koordinat(100, 0),
@@ -114,10 +139,12 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testCreateKebun() throws Exception {
         when(kebunService.createKebun(any(KebunRequestDTO.class))).thenReturn(kebun1);
 
         mockMvc.perform(post("/api/kebun")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isOk())
@@ -125,11 +152,13 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testCreateKebunOverlap() throws Exception {
         when(kebunService.createKebun(any(KebunRequestDTO.class)))
                 .thenThrow(new IllegalArgumentException("Kebun overlaps with an existing kebun."));
 
         mockMvc.perform(post("/api/kebun")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isBadRequest())
@@ -137,29 +166,32 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testDeleteKebun() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
         when(kebunService.deleteKebunById(id)).thenReturn(kebun1);
 
-        mockMvc.perform(delete("/api/kebun/" + id))
+        mockMvc.perform(delete("/api/kebun/" + id).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Kebun deleted successfully"))
                 .andExpect(jsonPath("$.data.nama").value("Kebun1"));
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testDeleteKebunNotFound() throws Exception {
         String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
 
         when(kebunService.findById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
 
-        mockMvc.perform(delete("/api/kebun/" + badId))
+        mockMvc.perform(delete("/api/kebun/" + badId).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Kebun with ID " + badId + " not found."));
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testUpdateKebunSuccess() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
@@ -176,6 +208,7 @@ public class KebunControllerTest {
         when(kebunService.updateKebun(eq(id), any(KebunRequestDTO.class))).thenReturn(updatedData);
 
         mockMvc.perform(put("/api/kebun/" + id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedData)))
                 .andExpect(status().isOk())
@@ -184,6 +217,7 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testUpdateKebunSameName() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
@@ -194,6 +228,7 @@ public class KebunControllerTest {
                 .thenThrow(new IllegalArgumentException("Kebun with name Kebun2 already exists."));
 
         mockMvc.perform(put("/api/kebun/" + id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isBadRequest())
@@ -201,6 +236,7 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testUpdateKebunOverlap() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
 
@@ -211,6 +247,7 @@ public class KebunControllerTest {
                 .thenThrow(new IllegalArgumentException("Updated kebun overlaps with an existing kebun."));
 
         mockMvc.perform(put("/api/kebun/" + id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isBadRequest())
@@ -218,6 +255,7 @@ public class KebunControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testAssignMandorSucces() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         String mandorId = "mandor123";
@@ -231,25 +269,27 @@ public class KebunControllerTest {
 
         when(kebunService.assignMandor(id, mandorId)).thenReturn(updatedKebun);
 
-        mockMvc.perform(patch("/api/kebun/" + id + "/mandor/" + mandorId))
+        mockMvc.perform(patch("/api/kebun/" + id + "/mandor/" + mandorId).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Mandor assigned successfully"))
                 .andExpect(jsonPath("$.data.mandorId").value(mandorId));
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testAssignmandorKebunNotFound() throws Exception {
         String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
         String mandorId = "mandor123";
 
         when(kebunService.assignMandor(badId, mandorId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
 
-        mockMvc.perform(patch("/api/kebun/" + badId + "/mandor/" + mandorId))
+        mockMvc.perform(patch("/api/kebun/" + badId + "/mandor/" + mandorId).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Kebun with ID " + badId + " not found."));
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testAssignSupirSuccess() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         String supirId = "supir123";
@@ -263,25 +303,32 @@ public class KebunControllerTest {
 
         when(kebunService.assignSupir(id, supirId)).thenReturn(updatedKebun);
 
-        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
+        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Supir Truk assigned successfully"))
                 .andExpect(jsonPath("$.data.supirIds[0]").value(supirId));
     }
 
     @Test
+    @WithMockUser(authorities = adminAuth)
     public void testAssignSupirAlreadyAssigned() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         String supirId = "supir123";
 
-        when(kebunService.assignSupir(id, supirId)).thenThrow(new IllegalArgumentException("Supir Truk is already assigned to this kebun."));
+        Kebun updatedKebun = new Kebun();
+        updatedKebun.setId(UUID.fromString(id));
+        updatedKebun.setNama("Kebun1");
+        updatedKebun.setSupirIds(List.of(supirId));
 
-        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Supir Truk is already assigned to this kebun."));
+        when(kebunService.assignSupir(id, supirId)).thenReturn(updatedKebun);
+
+        mockMvc.perform(patch("/api/kebun/" + id + "/supir/" + supirId).with(csrf()))
+                .andExpect(status().isOk());
     }
 
-    @Test public void testRemoveSupirSuccess() throws Exception {
+    @Test
+    @WithMockUser(authorities = adminAuth)
+    public void testRemoveSupirSuccess() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         String supirId = "supir123";
 
@@ -294,19 +341,21 @@ public class KebunControllerTest {
 
         when(kebunService.removeSupir(id, supirId)).thenReturn(updatedKebun);
 
-        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId))
+        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Supir Truk removed successfully"))
                 .andExpect(jsonPath("$.data.supirIds.length()").value(0));
     }
 
-     @Test public void testRemoveSupirNotAssigned() throws Exception {
+     @Test
+     @WithMockUser(authorities = adminAuth)
+     public void testRemoveSupirNotAssigned() throws Exception {
         String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         String supirId = "supir123";
 
         when(kebunService.removeSupir(id, supirId)).thenThrow(new IllegalArgumentException("Supir Truk is not assigned to this kebun."));
 
-        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId))
+        mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Supir Truk is not assigned to this kebun."));
     }

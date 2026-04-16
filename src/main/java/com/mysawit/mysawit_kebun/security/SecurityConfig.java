@@ -25,10 +25,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.GET, "/api/kebun/**").permitAll()
 
-                    .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/kebun/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/kebun/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/kebun/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/kebun/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/kebun/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/kebun/**").hasAuthority("ADMIN")
 
                     .anyRequest().authenticated()
             )
