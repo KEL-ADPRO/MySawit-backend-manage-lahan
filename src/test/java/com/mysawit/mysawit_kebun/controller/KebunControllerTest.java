@@ -359,4 +359,70 @@ public class KebunControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Supir Truk is not assigned to this kebun."));
     }
+
+    @Test
+    public void testCheckMandorAssignmentIsAssigned() throws Exception {
+        String mandorId = "mandor123";
+
+        when(kebunService.checkMandorAssignment(mandorId)).thenReturn(java.util.Optional.of(kebun1));
+
+        mockMvc.perform(get("/api/kebun/check-mandor/" + mandorId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isAssigned").value(true));
+    }
+
+    @Test
+    public void testCheckMandorAssignmentNotAssigned() throws Exception {
+        String mandorId = "mandor123";
+
+        when(kebunService.checkMandorAssignment(mandorId)).thenReturn(java.util.Optional.empty());
+
+        mockMvc.perform(get("/api/kebun/check-mandor/" + mandorId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isAssigned").value(false));
+    }
+
+    @Test
+    public void testCheckMandorASsignmentMandorNotexist() throws Exception {
+        String mandorId = "mandor123";
+
+        when(kebunService.checkMandorAssignment(mandorId)).thenThrow(new IllegalArgumentException("Mandor with ID " + mandorId + " not found."));
+
+        mockMvc.perform(get("/api/kebun/check-mandor/" + mandorId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Mandor with ID " + mandorId + " not found."));
+    }
+
+    @Test
+    public void testCheckSupirAssignmentIsAssigned() throws Exception {
+        String supirId = "supir123";
+
+        when(kebunService.checkSupirAssignment(supirId)).thenReturn(java.util.Optional.of(kebun1));
+
+        mockMvc.perform(get("/api/kebun/check-supir/" + supirId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isAssigned").value(true));
+    }
+
+    @Test
+    public void testCheckSupirAssignmentNotAssigned() throws Exception {
+        String supirId = "supir123";
+
+        when(kebunService.checkSupirAssignment(supirId)).thenReturn(java.util.Optional.empty());
+
+        mockMvc.perform(get("/api/kebun/check-supir/" + supirId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isAssigned").value(false));
+    }
+
+    @Test
+    public void testCheckSupirAssignmentSupirNotExist() throws Exception {
+        String supirId = "supir123";
+
+        when(kebunService.checkSupirAssignment(supirId)).thenThrow(new IllegalArgumentException("Supir with ID " + supirId + " not found."));
+
+        mockMvc.perform(get("/api/kebun/check-supir/" + supirId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Supir with ID " + supirId + " not found."));
+    }
 }
