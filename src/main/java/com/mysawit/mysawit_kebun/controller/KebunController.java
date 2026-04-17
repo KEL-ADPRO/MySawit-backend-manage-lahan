@@ -104,4 +104,42 @@ public class KebunController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/check-mandor/{mandorId}")
+    public ResponseEntity<?> checkMandorAssignment(@PathVariable String mandorId) {
+        try {
+            return kebunService.checkMandorAssignment(mandorId)
+                    .map(kebun -> ResponseEntity.ok(Map.of(
+                            "isAssigned", true,
+                            "kebunId", kebun.getId().toString(),
+                            "namaKebun", kebun.getNama()
+                    )))
+                    .orElseGet(() -> ResponseEntity.ok(Map.of(
+                            "isAssigned", false,
+                            "message", "Mandor is not assigned to any kebun"
+                    )));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/check-supir/{supirId}")
+    public  ResponseEntity<?> checkSupirAssignment(@PathVariable String supirId) {
+        try {
+            return kebunService.checkSupirAssignment(supirId)
+                    .map(kebun -> ResponseEntity.ok(Map.of(
+                            "isAssigned", true,
+                            "kebunId", kebun.getId().toString(),
+                            "namaKebun", kebun.getNama()
+                    )))
+                    .orElseGet(() -> ResponseEntity.ok(Map.of(
+                            "isAssigned", false,
+                            "message", "Supir Truk is not assigned to any kebun"
+                    )));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
