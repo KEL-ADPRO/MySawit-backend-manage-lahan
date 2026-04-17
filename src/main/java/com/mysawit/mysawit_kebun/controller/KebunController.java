@@ -57,9 +57,8 @@ public class KebunController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteKebunById(@PathVariable String id) {
         try {
-            Kebun kebun = kebunService.findById(id);
-            Kebun deletedKebun = kebunService.deleteKebunById(id);
-            return ResponseEntity.ok(Map.of("message", "Kebun deleted successfully", "data", deletedKebun));
+            kebunService.deleteKebunById(id);
+            return ResponseEntity.ok(Map.of("message", "Kebun deleted successfully", "deletedId", id));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

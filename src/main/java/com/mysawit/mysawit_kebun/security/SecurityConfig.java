@@ -23,6 +23,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/error").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/kebun/**").permitAll()
 
                     .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasAuthority("ADMIN")

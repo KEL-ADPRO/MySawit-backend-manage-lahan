@@ -175,7 +175,7 @@ public class KebunControllerTest {
         mockMvc.perform(delete("/api/kebun/" + id).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Kebun deleted successfully"))
-                .andExpect(jsonPath("$.data.nama").value("Kebun1"));
+                .andExpect(jsonPath("$.deletedId").value(id));
     }
 
     @Test
@@ -183,7 +183,7 @@ public class KebunControllerTest {
     public void testDeleteKebunNotFound() throws Exception {
         String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
 
-        when(kebunService.findById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+        when(kebunService.deleteKebunById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
 
         mockMvc.perform(delete("/api/kebun/" + badId).with(csrf()))
                 .andExpect(status().isBadRequest())
