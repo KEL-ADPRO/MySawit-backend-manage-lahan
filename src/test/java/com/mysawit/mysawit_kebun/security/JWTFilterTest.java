@@ -35,13 +35,13 @@ public class JWTFilterTest {
     private final String secretString = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkeymysecretkey";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         SecurityContextHolder.clearContext();
         ReflectionTestUtils.setField(jwtFilter, "jwtSecret", secretString);
     }
 
     @Test
-    public void filterNoHeader() throws Exception {
+    void filterNoHeader() throws Exception {
         when(request.getHeader("Authorization")).thenReturn(null);
 
         jwtFilter.doFilterInternal(request, response, filterChain);
@@ -51,7 +51,7 @@ public class JWTFilterTest {
     }
 
     @Test
-    public void filterValidToken() throws Exception {
+    void filterValidToken() throws Exception {
         SecretKey key = Keys.hmacShaKeyFor(secretString.getBytes());
         String validToken = Jwts.builder()
                 .setSubject("admin123")
@@ -71,7 +71,7 @@ public class JWTFilterTest {
     }
 
     @Test
-    public void filterInvalidToken() throws Exception {
+    void filterInvalidToken() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer invalidtoken");
 
         jwtFilter.doFilterInternal(request, response, filterChain);
