@@ -204,6 +204,20 @@ public class KebunServiceTest {
     }
 
     @Test
+    public void testDeleteKebunWithMandorAssigned() {
+        String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+        UUID uuid = UUID.fromString(id);
+        kebun1.setMandorId("mandor123");
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            kebunService.deleteKebunById(id);
+        });
+        assertEquals("Cannot delete kebun with assigned Mandor. Reassign Mandor first.", exception.getMessage());
+    }
+
+    @Test
     public void testUpdateNamaKebunSuccess() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
