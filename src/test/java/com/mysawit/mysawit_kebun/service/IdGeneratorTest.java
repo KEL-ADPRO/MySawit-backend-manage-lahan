@@ -7,10 +7,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class IdGeneratorTest {
+class IdGeneratorTest {
 
     @Test
-    public void testGenerateId() {
+    void testGenerateId() {
         IdGenerator idGenerator = new IdGenerator();
         UUID id1 = idGenerator.generateUUID();
         UUID id2 = idGenerator.generateUUID();

@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class OverlapCheckerTest {
+class OverlapCheckerTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
     }
 
     @Test
-    public void checkOverlapTrue() {
+    void checkOverlapTrue() {
         Koordinat koordinat1 = new Koordinat(0, 0);
         Koordinat koordinat2 = new Koordinat(100, 0);
         Koordinat koordinat3 = new Koordinat(100, 100);
@@ -33,7 +33,7 @@ public class OverlapCheckerTest {
     }
 
     @Test
-    public void checkOverlapFalse() {
+    void checkOverlapFalse() {
         Koordinat koordinat1 = new Koordinat(0, 0);
         Koordinat koordinat2 = new Koordinat(100, 0);
         Koordinat koordinat3 = new Koordinat(100, 100);

@@ -1,6 +1,6 @@
 package com.mysawit.mysawit_kebun.service;
 
-import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
+import com.mysawit.mysawit_kebun.dto.KebunRequestDto;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
@@ -8,10 +8,10 @@ import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class KebunServiceImpl implements KebunService {
 
     private final KebunRepository kebunRepository;
@@ -63,7 +64,8 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public Kebun createKebun(KebunRequestDTO requestDTO) {
+    @Transactional
+    public Kebun createKebun(KebunRequestDto requestDTO) {
         createNameValidation(requestDTO.getNama());
 
         Area newArea = requestDTO.getArea().toEntity();
@@ -84,6 +86,7 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
+    @Transactional
     public Kebun deleteKebunById(String id) {
         Kebun existingKebun = findById(id);
         deleteKebunValidation(existingKebun);
@@ -107,7 +110,8 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public Kebun updateKebun(String id, KebunRequestDTO requestDTO) {
+    @Transactional
+    public Kebun updateKebun(String id, KebunRequestDto requestDTO) {
         Kebun existingKebun = findById(id);
 
         updateNameValidation(existingKebun, requestDTO.getNama());
@@ -190,6 +194,7 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
+    @Transactional
     public Kebun removeSupir(String kebunId, String supirId) {
         Kebun existingKebun = findById(kebunId);
 

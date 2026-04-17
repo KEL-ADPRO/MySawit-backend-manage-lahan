@@ -1,8 +1,8 @@
 package com.mysawit.mysawit_kebun.service;
 
-import com.mysawit.mysawit_kebun.DTO.AreaDTO;
-import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
-import com.mysawit.mysawit_kebun.DTO.KoordinatDTO;
+import com.mysawit.mysawit_kebun.dto.AreaDto;
+import com.mysawit.mysawit_kebun.dto.KebunRequestDto;
+import com.mysawit.mysawit_kebun.dto.KoordinatDto;
 import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class KebunServiceTest {
+class KebunServiceTest {
     @Mock
     private KebunRepository kebunRepository;
     @Mock
@@ -41,7 +41,7 @@ public class KebunServiceTest {
     private List<Kebun> kebunList;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Koordinat koordinat1 = new Koordinat(0, 0);
         Koordinat koordinat2 = new Koordinat(100, 0);
         Koordinat koordinat3 = new Koordinat(100, 100);
@@ -72,14 +72,14 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCreateKebunSuccess() {
-        KoordinatDTO koordinat1 = new KoordinatDTO(200, 0);
-        KoordinatDTO koordinat2 = new KoordinatDTO(300, 0);
-        KoordinatDTO koordinat3 = new KoordinatDTO(300, 200);
-        KoordinatDTO koordinat4 = new KoordinatDTO(200, 200);
-        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+    void testCreateKebunSuccess() {
+        KoordinatDto koordinat1 = new KoordinatDto(200, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(300, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(300, 200);
+        KoordinatDto koordinat4 = new KoordinatDto(200, 200);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        KebunRequestDto requestDTO = new KebunRequestDto();
         requestDTO.setNama("Kebun3");
         requestDTO.setLuas(100);
         requestDTO.setArea(area);
@@ -96,8 +96,8 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCreateKebunSameName() {
-        KebunRequestDTO requestDTO = new KebunRequestDTO();
+    void testCreateKebunSameName() {
+        KebunRequestDto requestDTO = new KebunRequestDto();
         requestDTO.setNama("Kebun1");
 
         when(kebunRepository.existsByNama("Kebun1")).thenReturn(true);
@@ -110,14 +110,14 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCreateKebunOverlapped() {
-        KoordinatDTO koordinat1 = new KoordinatDTO(50, 50);
-        KoordinatDTO koordinat2 = new KoordinatDTO(150, 50);
-        KoordinatDTO koordinat3 = new KoordinatDTO(150, 150);
-        KoordinatDTO koordinat4 = new KoordinatDTO(50, 150);
-        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+    void testCreateKebunOverlapped() {
+        KoordinatDto koordinat1 = new KoordinatDto(50, 50);
+        KoordinatDto koordinat2 = new KoordinatDto(150, 50);
+        KoordinatDto koordinat3 = new KoordinatDto(150, 150);
+        KoordinatDto koordinat4 = new KoordinatDto(50, 150);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        KebunRequestDTO requestDTO = new KebunRequestDTO();
+        KebunRequestDto requestDTO = new KebunRequestDto();
         requestDTO.setNama("Kebun4");
         requestDTO.setLuas(100);
         requestDTO.setArea(area);
@@ -133,7 +133,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testFindAllKebun() {
+    void testFindAllKebun() {
         when(kebunRepository.findAll()).thenReturn(kebunList);
 
         List<Kebun> allKebun = kebunService.findAllKebun();
@@ -141,7 +141,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testFindKebunById() {
+    void testFindKebunById() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
 
@@ -150,7 +150,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testFindKebunByIdIfNotExist() {
+    void testFindKebunByIdIfNotExist() {
         UUID uuid = UUID.fromString("dd558d9d-1d39-460d-8860-71dd6dd63dd6");
         when(kebunRepository.findById(uuid)).thenReturn(Optional.empty());
 
@@ -161,7 +161,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testFindKebunByName() {
+    void testFindKebunByName() {
         when(kebunRepository.findByNama("Kebun2")).thenReturn(Optional.of(kebun2));
 
         Kebun kebun = kebunService.findByName("Kebun2");
@@ -169,7 +169,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testFindKebunByNameIfNotExist() {
+    void testFindKebunByNameIfNotExist() {
         when(kebunRepository.findByNama("Kebun4")).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -179,7 +179,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testDeleteKebunById() {
+    void testDeleteKebunById() {
         String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(id);
 
@@ -191,7 +191,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testDeleteKebunByIdIfNotExist() {
+    void testDeleteKebunByIdIfNotExist() {
         String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(id);
 
@@ -204,7 +204,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testDeleteKebunWithMandorAssigned() {
+    void testDeleteKebunWithMandorAssigned() {
         String id ="aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(id);
         kebun1.setMandorId("mandor123");
@@ -219,16 +219,16 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testUpdateNamaKebunSuccess() {
+    void testUpdateNamaKebunSuccess() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        KoordinatDTO koordinat1 = new KoordinatDTO(200, 0);
-        KoordinatDTO koordinat2 = new KoordinatDTO(300, 0);
-        KoordinatDTO koordinat3 = new KoordinatDTO(300, 200);
-        KoordinatDTO koordinat4 = new KoordinatDTO(200, 200);
-        AreaDTO area = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+        KoordinatDto koordinat1 = new KoordinatDto(200, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(300, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(300, 200);
+        KoordinatDto koordinat4 = new KoordinatDto(200, 200);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        KebunRequestDTO kebun = new KebunRequestDTO();
+        KebunRequestDto kebun = new KebunRequestDto();
         kebun.setNama("Kebun1 Updated");
         kebun.setLuas(150);
         kebun.setArea(area);
@@ -246,10 +246,10 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testUpdateKebunNameAlreadyExists() {
+    void testUpdateKebunNameAlreadyExists() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        KebunRequestDTO updatedData = new KebunRequestDTO();
+        KebunRequestDto updatedData = new KebunRequestDto();
         updatedData.setNama("Kebun2");
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
@@ -263,16 +263,16 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testUpdateKebunOverlapped() {
+    void testUpdateKebunOverlapped() {
         UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
 
-        KoordinatDTO koordinat1 = new KoordinatDTO(50, 0);
-        KoordinatDTO koordinat2 = new KoordinatDTO(150, 0);
-        KoordinatDTO koordinat3 = new KoordinatDTO(150, 100);
-        KoordinatDTO koordinat4 = new KoordinatDTO(50, 100);
-        AreaDTO overlappingArea = new AreaDTO(koordinat1, koordinat2, koordinat3, koordinat4);
+        KoordinatDto koordinat1 = new KoordinatDto(50, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(150, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(150, 100);
+        KoordinatDto koordinat4 = new KoordinatDto(50, 100);
+        AreaDto overlappingArea = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
 
-        KebunRequestDTO updatedData = new KebunRequestDTO();
+        KebunRequestDto updatedData = new KebunRequestDto();
         updatedData.setNama("Kebun1 Updated");
         updatedData.setLuas(150);
         updatedData.setArea(overlappingArea);
@@ -291,7 +291,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignMandorAndPublishSuccess() {
+    void testAssignMandorAndPublishSuccess() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String mandorId = "mandor123";
@@ -307,7 +307,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignMandorFromAnotherKebun() {
+    void testAssignMandorFromAnotherKebun() {
         String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
         UUID targetUuid = UUID.fromString(targetKebunId);
         String mandorId = "mandor123";
@@ -330,7 +330,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignMandorToKebunWithOtherMandor() {
+    void testAssignMandorToKebunWithOtherMandor() {
         String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
         UUID targetUuid = UUID.fromString(targetKebunId);
         String mandorId = "mandor123";
@@ -348,7 +348,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignSupirSuccess() {
+    void testAssignSupirSuccess() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -368,7 +368,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignSupirAlreadyAssigned() {
+    void testAssignSupirAlreadyAssigned() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -385,7 +385,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testAssignSupirFromAnotherKebun() {
+    void testAssignSupirFromAnotherKebun() {
         String targetKebunId = "bb558b9b-1b39-460b-8860-71bb6bb63bb6";
         UUID targetUuid = UUID.fromString(targetKebunId);
         String supirId = "supir123";
@@ -407,7 +407,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testRemoveSupirSuccess() {
+    void testRemoveSupirSuccess() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -425,7 +425,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testRemoveSupirNotAssigned() {
+    void testRemoveSupirNotAssigned() {
         String kebunId = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
         UUID uuid = UUID.fromString(kebunId);
         String supirId = "supir123";
@@ -442,7 +442,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCheckMandorAssignmentisAssigned() {
+    void testCheckMandorAssignmentisAssigned() {
         String mandorId = "mandor123";
         kebun1.setMandorId(mandorId);
 
@@ -454,7 +454,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCheckMandorAssignmentNotAssigned() {
+    void testCheckMandorAssignmentNotAssigned() {
         String mandorId = "mandor123";
 
         when(kebunRepository.findByMandorId(mandorId)).thenReturn(Optional.empty());
@@ -464,7 +464,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCheckSupirAssignmentisAssigned() {
+    void testCheckSupirAssignmentisAssigned() {
         String supirId = "supir123";
         kebun1.setSupirIds(new ArrayList<>(List.of(supirId)));
 
@@ -476,7 +476,7 @@ public class KebunServiceTest {
     }
 
     @Test
-    public void testCheckSupirAssignmentNotAssigned() {
+    void testCheckSupirAssignmentNotAssigned() {
         String supirId = "supir123";
 
         when(kebunRepository.findBySupirIdsContaining(supirId)).thenReturn(Optional.empty());

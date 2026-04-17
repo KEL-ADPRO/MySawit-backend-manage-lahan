@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JWTFilter jwtFilter;
+    private final String adminAuth = "ADMIN";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,10 +27,10 @@ public class SecurityConfig {
                     .requestMatchers("/error").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/kebun/**").permitAll()
 
-                    .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/kebun/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/kebun/**").hasAuthority("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/kebun/**").hasAuthority("ADMIN")
+                    .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.DELETE, "/api/kebun/**").hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.POST, "/api/kebun/**").hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.PUT, "/api/kebun/**").hasAuthority(adminAuth)
 
                     .anyRequest().authenticated()
             )

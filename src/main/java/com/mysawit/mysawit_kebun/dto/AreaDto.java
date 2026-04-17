@@ -1,4 +1,4 @@
-package com.mysawit.mysawit_kebun.DTO;
+package com.mysawit.mysawit_kebun.dto;
 
 import com.mysawit.mysawit_kebun.model.Area;
 import lombok.AllArgsConstructor;
@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AreaDTO {
-    private KoordinatDTO bottomLeft;
-    private KoordinatDTO bottomRight;
-    private KoordinatDTO topRight;
-    private KoordinatDTO topLeft;
+public class AreaDto {
+    private KoordinatDto bottomLeft;
+    private KoordinatDto bottomRight;
+    private KoordinatDto topRight;
+    private KoordinatDto topLeft;
 
     public Area toEntity() {
         return new Area(
