@@ -4,6 +4,7 @@ import com.mysawit.mysawit_kebun.DTO.KebunRequestDTO;
 import com.mysawit.mysawit_kebun.model.Kebun;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface KebunService {
     List<Kebun> findAllKebun();
@@ -15,4 +16,6 @@ public interface KebunService {
     Kebun assignMandor(String kebunId, String mandorId);
     Kebun assignSupir(String kebunId, String supirId);
     Kebun removeSupir(String kebunId, String supirId);
+    Optional<Kebun>  checkMandorAssignment(String mandorId);
+    Optional<Kebun> checkSupirAssignment(String supirId);
 }

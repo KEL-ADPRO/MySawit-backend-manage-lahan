@@ -441,4 +441,48 @@ public class KebunServiceTest {
         assertEquals("Supir Truk is not assigned to this kebun.", exception.getMessage());
     }
 
+    @Test
+    public void testCheckMandorAssignmentisAssigned() {
+        String mandorId = "mandor123";
+        kebun1.setMandorId(mandorId);
+
+        when(kebunRepository.findByMandorId(mandorId)).thenReturn(Optional.of(kebun1));
+
+        Optional<Kebun> result = kebunService.checkMandorAssignment(mandorId);
+        assertTrue(result.isPresent());
+        assertEquals("Kebun1", result.get().getNama());
+    }
+
+    @Test
+    public void testCheckMandorAssignmentNotAssigned() {
+        String mandorId = "mandor123";
+
+        when(kebunRepository.findByMandorId(mandorId)).thenReturn(Optional.empty());
+
+        Optional<Kebun> result = kebunService.checkMandorAssignment(mandorId);
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void testCheckSupirAssignmentisAssigned() {
+        String supirId = "supir123";
+        kebun1.setSupirIds(new ArrayList<>(List.of(supirId)));
+
+        when(kebunRepository.findBySupirIdsContaining(supirId)).thenReturn(Optional.of(kebun1));
+
+        Optional<Kebun> result = kebunService.checkSupirAssignment(supirId);
+        assertTrue(result.isPresent());
+        assertEquals("Kebun1", result.get().getNama());
+    }
+
+    @Test
+    public void testCheckSupirAssignmentNotAssigned() {
+        String supirId = "supir123";
+
+        when(kebunRepository.findBySupirIdsContaining(supirId)).thenReturn(Optional.empty());
+
+        Optional<Kebun> result = kebunService.checkSupirAssignment(supirId);
+        assertFalse(result.isPresent());
+    }
+
 }
