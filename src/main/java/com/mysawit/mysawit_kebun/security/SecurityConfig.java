@@ -16,7 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JWTFilter jwtFilter;
-    private final String adminAuth = "ADMIN";
+    private final static String adminAuth = "ADMIN";
+    private final static String defaultUrl = "/api/kebun/**";
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -25,12 +26,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/error").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/kebun/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, defaultUrl).permitAll()
 
-                    .requestMatchers(HttpMethod.PATCH, "/api/kebun/**").hasAuthority(adminAuth)
-                    .requestMatchers(HttpMethod.DELETE, "/api/kebun/**").hasAuthority(adminAuth)
-                    .requestMatchers(HttpMethod.POST, "/api/kebun/**").hasAuthority(adminAuth)
-                    .requestMatchers(HttpMethod.PUT, "/api/kebun/**").hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.PATCH, defaultUrl).hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.DELETE, defaultUrl).hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.POST, defaultUrl).hasAuthority(adminAuth)
+                    .requestMatchers(HttpMethod.PUT, defaultUrl).hasAuthority(adminAuth)
 
                     .anyRequest().authenticated()
             )
