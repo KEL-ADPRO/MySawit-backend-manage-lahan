@@ -64,7 +64,15 @@ Currently implemented endpoints for the Kebun module:
 | Method | Endpoint | Description | Request Body |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/kebun` | Fetch a list of all Kebun | N/A |
-| `POST` | `/api/kebun` | Create a new Kebun entry | `{ "nama": "string" }` |
-
+| `GET` | `/api/kebun/{id}` | Fetch a specific Kebun by its UUID | N/A |
+| `GET` | `/api/kebun/name/{name}` | Fetch a specific Kebun by its exact name | N/A |
+| `POST` | `/api/kebun` | Create a new Kebun entry | `{ "nama": "string", "luas": number, "area": { ... } }` |
+| `PUT` | `/api/kebun/{id}` | Update an existing Kebun | `{ "nama": "string", "luas": number, "area": { ... } }` |
+| `DELETE` | `/api/kebun/{id}` | Delete a Kebun by ID | N/A |
+| `PATCH` | `/api/kebun/{kebunId}/mandor/{mandorId}` | Assign a Mandor to a specific Kebun | N/A |
+| `PATCH` | `/api/kebun/{kebunId}/supir/{supirId}` | Assign a Supir Truk to a specific Kebun | N/A |
+| `DELETE` | `/api/kebun/{kebunId}/supir/{supirId}` | Remove a specific Supir Truk from a Kebun | N/A |
+| `GET` | `/api/kebun/check-mandor/{mandorId}` | Check if a Mandor is currently assigned to any Kebun | N/A |
+| `GET` | `/api/kebun/check-supir/{supirId}` | Check if a Supir Truk is currently assigned to any Kebun | N/A |
 
 *(Note: CORS is configured to allow requests from the frontend running on `http://localhost:3000`)*
