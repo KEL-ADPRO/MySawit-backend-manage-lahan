@@ -204,4 +204,14 @@ public class KebunServiceImpl implements KebunService {
 
         return kebunRepository.save(existingKebun);
     }
+
+    @Override
+    public Optional<Kebun> checkMandorAssignment(String mandorId) {
+        return kebunRepository.findByMandorId(mandorId);
+    }
+
+    @Override
+    public Optional<Kebun> checkSupirAssignment(String supirId) {
+        return kebunRepository.findBySupirIdsContaining(supirId);
+    }
 }
