@@ -215,6 +215,7 @@ public class KebunServiceTest {
             kebunService.deleteKebunById(id);
         });
         assertEquals("Cannot delete kebun with assigned Mandor. Reassign Mandor first.", exception.getMessage());
+        verify(kebunRepository, times(0)).delete(kebun1);
     }
 
     @Test

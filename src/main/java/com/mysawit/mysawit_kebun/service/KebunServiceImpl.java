@@ -77,9 +77,16 @@ public class KebunServiceImpl implements KebunService {
         return kebunRepository.save(kebun);
     }
 
+    private void deleteKebunValidation(Kebun kebun) {
+        if (kebun.getMandorId() != null) {
+            throw new IllegalArgumentException("Cannot delete kebun with assigned Mandor. Reassign Mandor first.");
+        }
+    }
+
     @Override
     public Kebun deleteKebunById(String id) {
         Kebun existingKebun = findById(id);
+        deleteKebunValidation(existingKebun);
         kebunRepository.delete(existingKebun);
         return existingKebun;
     }
