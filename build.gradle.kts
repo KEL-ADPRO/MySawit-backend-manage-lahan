@@ -5,6 +5,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.sonarqube") version "7.2.2.6593"
 	checkstyle
+	id("com.google.protobuf") version "0.9.4"
 }
 
 group = "com.mysawit"
@@ -45,6 +46,11 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+
+	implementation("net.devh:grpc-server-spring-boot-starter:3.0.0.RELEASE")
+	implementation("io.grpc:grpc-protobuf:1.62.2")
+	implementation("io.grpc:grpc-stub:1.62.2")
+	compileOnly("org.apache.tomcat:annotations-api:6.0.53")
 }
 
 tasks.withType<Test> {
@@ -93,5 +99,23 @@ sonar {
 		property("sonar.host.url", "https://sonarcloud.io")
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+	}
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.25.3"
+	}
+	plugins {
+		id("grpc") {
+			artifact = "io.grpc:protoc-gen-grpc-java:1.62.2"
+		}
+	}
+	generateProtoTasks {
+		all().forEach {
+			it.plugins {
+				id("grpc") { }
+			}
+		}
 	}
 }
