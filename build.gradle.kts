@@ -60,8 +60,12 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
-tasks.withType<Checkstyle> {
-	exclude("**/generated/**")
+tasks.named<Checkstyle>("checkstyleMain") {
+	source = fileTree("src/main/java")
+}
+
+tasks.named<Checkstyle>("checkstyleTest") {
+	source = fileTree("src/test/java")
 }
 
 tasks.register<Test>("unitTest") {
