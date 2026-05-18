@@ -1,42 +1,58 @@
-name: Continuous Deployment (Dummy)
+name: Continuous Deployment (Production)
 
 on:
   push:
     branches:
-      - staging
+      - main
 
 jobs:
-  build-and-deploy:
-    name: Build and Simulate Deployment
+  build-and-push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          java-version: 21
-          distribution: "temurin"
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
 
-      - name: Build Application Artifact
-        run: ./gradlew bootJar
+  deploy-to-aws:
+    name: Deploy to AWS Academy EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-      - name: Verify Build Artifact
-        run: ls -lh build/libs/
-
-      - name: Dummy Server Deployment
-        run: |
-          echo "Starting Deployment Process..."
-          echo "Fetching latest build artifact..."
-          echo "Connecting to production server..."
-          echo "Authentication successful."
-          echo "Uploading artifact to server..."
-          sleep 2 
-          echo "Restarting Spring Boot service..."
-          sleep 2
-          echo "Deployment successful."
+    steps:
+      - name: SSH into AWS and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
+            
+            sudo docker stop kebun-app || true
+            sudo docker rm kebun-app || true
+            
+            sudo docker run -d \
+              --name kebun-app \
+              -p 8082:8082 \
+              -p 9090:9090 \
+              -e NEON_DB_URL="${{ secrets.NEON_DB_URL }}" \
+              -e NEON_DB_USERNAME="${{ secrets.NEON_DB_USERNAME }}" \
+              -e NEON_DB_PASSWORD="${{ secrets.NEON_DB_PASSWORD }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
+            
+            sudo docker system prune -af
