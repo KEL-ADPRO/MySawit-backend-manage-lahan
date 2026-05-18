@@ -60,6 +60,10 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+tasks.withType<Checkstyle> {
+	exclude("**/generated/**")
+}
+
 tasks.register<Test>("unitTest") {
 	description = "Runs the unit tests."
 	group = "verification"
