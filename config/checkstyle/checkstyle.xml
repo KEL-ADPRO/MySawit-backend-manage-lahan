@@ -4,7 +4,6 @@
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
-    <property name="excludes" value="**/generated/**,**/build/**"/>
     <module name="TreeWalker">
         <module name="LocalVariableName"/>
         <module name="MethodName"/>
