@@ -1,5 +1,6 @@
 package com.mysawit.mysawit_kebun.controller;
 
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
@@ -35,10 +36,10 @@ class KebunQueryControllerTest extends KebunControllerTestBase {
     @Test
     void testGetKebunByIdNotFound() throws Exception {
         String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
-        when(kebunService.findById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+        when(kebunService.findById(badId)).thenThrow(new KebunNotFoundException("Kebun with ID " + badId + " not found."));
 
         mockMvc.perform(get("/api/kebun/" + badId))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Kebun with ID " + badId + " not found."));
     }
 
@@ -54,10 +55,10 @@ class KebunQueryControllerTest extends KebunControllerTestBase {
 
     @Test
     void testGetKebunByNameNotFound() throws Exception {
-        when(kebunService.findByName("Kebun4")).thenThrow(new IllegalArgumentException("Kebun with name Kebun4 not found."));
+        when(kebunService.findByName("Kebun4")).thenThrow(new KebunNotFoundException("Kebun with name Kebun4 not found."));
 
         mockMvc.perform(get("/api/kebun/name/Kebun4"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Kebun with name Kebun4 not found."));
     }
 
@@ -89,11 +90,12 @@ class KebunQueryControllerTest extends KebunControllerTestBase {
     void testCheckMandorAssignmentMandorNotExist() throws Exception {
         String mandorId = "mandor123";
 
-        when(kebunService.checkMandorAssignment(mandorId)).thenThrow(new IllegalArgumentException("Mandor with ID " + mandorId + " not found."));
+        when(kebunService.checkMandorAssignment(mandorId)).thenReturn(java.util.Optional.empty());
 
         mockMvc.perform(get("/api/kebun/check-mandor/" + mandorId))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Mandor with ID " + mandorId + " not found."));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.isAssigned").value(false))
+                .andExpect(jsonPath("$.message").value("Mandor is not assigned to any kebun"));
     }
 
     @Test
@@ -124,11 +126,12 @@ class KebunQueryControllerTest extends KebunControllerTestBase {
     void testCheckSupirAssignmentSupirNotExist() throws Exception {
         String supirId = "supir123";
 
-        when(kebunService.checkSupirAssignment(supirId)).thenThrow(new IllegalArgumentException("Supir with ID " + supirId + " not found."));
+        when(kebunService.checkSupirAssignment(supirId)).thenReturn(java.util.Optional.empty());
 
         mockMvc.perform(get("/api/kebun/check-supir/" + supirId))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Supir with ID " + supirId + " not found."));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.isAssigned").value(false))
+                .andExpect(jsonPath("$.message").value("Supir Truk is not assigned to any kebun"));
     }
 }
 

@@ -1,6 +1,9 @@
 package com.mysawit.mysawit_kebun.controller;
 
 import com.mysawit.mysawit_kebun.dto.KebunRequestDto;
+import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
+import com.mysawit.mysawit_kebun.exception.KebunOverlapException;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -40,13 +43,13 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
     @WithMockUser(authorities = adminAuth)
     void testCreateKebunOverlap() throws Exception {
         when(kebunService.createKebun(any(KebunRequestDto.class)))
-                .thenThrow(new IllegalArgumentException("Kebun overlaps with an existing kebun."));
+                .thenThrow(new KebunOverlapException("Kebun overlaps with an existing kebun."));
 
         mockMvc.perform(post("/api/kebun")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Kebun overlaps with an existing kebun."));
     }
 
@@ -68,10 +71,10 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
     void testDeleteKebunNotFound() throws Exception {
         String badId = "dd558d9d-1d39-460d-8860-71dd6dd63dd6";
 
-        when(kebunService.deleteKebunById(badId)).thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+        when(kebunService.deleteKebunById(badId)).thenThrow(new KebunNotFoundException("Kebun with ID " + badId + " not found."));
 
         mockMvc.perform(delete("/api/kebun/" + badId).with(csrf()))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Kebun with ID " + badId + " not found."));
     }
 
@@ -110,13 +113,13 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
         requestDTO.setNama("Kebun2");
 
         when(kebunService.updateKebun(eq(id), any(KebunRequestDto.class)))
-                .thenThrow(new IllegalArgumentException("Kebun with name Kebun2 already exists."));
+                .thenThrow(new KebunDuplicateNameException("Kebun with name Kebun2 already exists."));
 
         mockMvc.perform(put("/api/kebun/" + id)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Kebun with name Kebun2 already exists."));
     }
 
@@ -129,13 +132,13 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
         requestDTO.setNama("Kebun1 Updated");
 
         when(kebunService.updateKebun(eq(id), any(KebunRequestDto.class)))
-                .thenThrow(new IllegalArgumentException("Updated kebun overlaps with an existing kebun."));
+                .thenThrow(new KebunOverlapException("Updated kebun overlaps with an existing kebun."));
 
         mockMvc.perform(put("/api/kebun/" + id)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(kebun1)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Updated kebun overlaps with an existing kebun."));
     }
 }

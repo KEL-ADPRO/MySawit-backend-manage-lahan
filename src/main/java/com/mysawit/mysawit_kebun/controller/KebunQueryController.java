@@ -30,77 +30,61 @@ public class KebunQueryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<WebResponse<?>> getKebunById(@PathVariable String id) {
-        try {
-            Kebun kebun = kebunService.findById(id);
-            return ResponseEntity.ok(WebResponse.builder()
-                    .message("Success")
-                    .data(kebun)
-                    .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
-        }
+        Kebun kebun = kebunService.findById(id);
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Success")
+                .data(kebun)
+                .build());
     }
 
     @GetMapping("/name/{name}")
     public ResponseEntity<WebResponse<?>> getKebunByName(@PathVariable String name) {
-        try {
-            Kebun kebun = kebunService.findByName(name);
-            return ResponseEntity.ok(WebResponse.builder()
-                    .message("Success")
-                    .data(kebun)
-                    .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
-        }
+        Kebun kebun = kebunService.findByName(name);
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Success")
+                .data(kebun)
+                .build());
     }
 
     @GetMapping("/check-mandor/{mandorId}")
     public ResponseEntity<WebResponse<?>> checkMandorAssignment(@PathVariable String mandorId) {
-        try {
-            var kebunAssignment = kebunService.checkMandorAssignment(mandorId);
-            if (kebunAssignment.isPresent()) {
-                Kebun kebun = kebunAssignment.get();
-                return ResponseEntity.ok(WebResponse.builder()
-                        .message("Mandor assignment found")
-                        .data(Map.of(
-                                "isAssigned", true,
-                                "kebunId", kebun.getId().toString(),
-                                "namaKebun", kebun.getNama()
-                        ))
-                        .build());
-            }
-
+        var kebunAssignment = kebunService.checkMandorAssignment(mandorId);
+        if (kebunAssignment.isPresent()) {
+            Kebun kebun = kebunAssignment.get();
             return ResponseEntity.ok(WebResponse.builder()
-                    .message("Mandor is not assigned to any kebun")
-                    .data(Map.of("isAssigned", false))
+                    .message("Mandor assignment found")
+                    .data(Map.of(
+                            "isAssigned", true,
+                            "kebunId", kebun.getId().toString(),
+                            "namaKebun", kebun.getNama()
+                    ))
                     .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
         }
+
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Mandor is not assigned to any kebun")
+                .data(Map.of("isAssigned", false))
+                .build());
     }
 
     @GetMapping("/check-supir/{supirId}")
     public ResponseEntity<WebResponse<?>> checkSupirAssignment(@PathVariable String supirId) {
-        try {
-            var kebunAssignment = kebunService.checkSupirAssignment(supirId);
-            if (kebunAssignment.isPresent()) {
-                Kebun kebun = kebunAssignment.get();
-                return ResponseEntity.ok(WebResponse.builder()
-                        .message("Supir assignment found")
-                        .data(Map.of(
-                                "isAssigned", true,
-                                "kebunId", kebun.getId().toString(),
-                                "namaKebun", kebun.getNama()
-                        ))
-                        .build());
-            }
-
+        var kebunAssignment = kebunService.checkSupirAssignment(supirId);
+        if (kebunAssignment.isPresent()) {
+            Kebun kebun = kebunAssignment.get();
             return ResponseEntity.ok(WebResponse.builder()
-                    .message("Supir Truk is not assigned to any kebun")
-                    .data(Map.of("isAssigned", false))
+                    .message("Supir assignment found")
+                    .data(Map.of(
+                            "isAssigned", true,
+                            "kebunId", kebun.getId().toString(),
+                            "namaKebun", kebun.getNama()
+                    ))
                     .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
         }
+
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Supir Truk is not assigned to any kebun")
+                .data(Map.of("isAssigned", false))
+                .build());
     }
 }
