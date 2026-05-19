@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package kebun;
+
+option java_package = "com.mysawit.mysawit_kebun.grpc";
+option java_multiple_files = true;
+
+service KebunService {
+  rpc GetAllKebun (GetAllKebunRequest) returns (GetAllKebunResponse);
+  rpc GetKebunById (GetKebunByIdRequest) returns (GetKebunByIdResponse);
+  rpc GetKebunByName (GetKebunByNameRequest) returns (GetKebunByNameResponse);
+  rpc CheckMandorAssignment (CheckMandorAssignmentRequest) returns (CheckMandorAssignmentResponse);
+  rpc CheckSupirAssignment (CheckSupirAssignmentRequest) returns (CheckSupirAssignmentResponse);
+}
+
+message Kebun {
+  string id = 1;
+  string nama = 2;
+  double luas = 3;
+  Area area = 4;
+  string mandor_id = 5;
+  repeated string supir_ids = 6;
+}
+
+message Koordinat {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Area {
+  Koordinat bottom_left = 1;
+  Koordinat bottom_right = 2;
+  Koordinat top_right = 3;
+  Koordinat top_left = 4;
+}
+
+message GetAllKebunRequest {}
+
+message GetAllKebunResponse {
+  repeated Kebun kebuns = 1;
+}
+
+message GetKebunByIdRequest {
+  string id = 1;
+}
+
+message GetKebunByIdResponse {
+  Kebun kebun = 1;
+}
+
+message GetKebunByNameRequest {
+  string name = 1;
+}
+
+message GetKebunByNameResponse {
+  Kebun kebun = 1;
+}
+
+message CheckMandorAssignmentRequest {
+  string mandor_id = 1;
+}
+
+message CheckMandorAssignmentResponse {
+  bool assigned = 1;
+  string kebun_id = 2;
+  string nama_kebun = 3;
+  string message = 4;
+}
+
+message CheckSupirAssignmentRequest {
+  string supir_id = 1;
+}
+
+message CheckSupirAssignmentResponse {
+  bool assigned = 1;
+  string kebun_id = 2;
+  string nama_kebun = 3;
+  string message = 4;
+}
+
