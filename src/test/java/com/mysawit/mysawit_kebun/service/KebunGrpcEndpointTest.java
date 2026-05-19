@@ -117,6 +117,38 @@ class KebunGrpcEndpointTest {
     }
 
     @Test
+    void getAllKebunHandlesNullList() {
+        when(kebunService.findAllKebun()).thenReturn(null);
+
+        RecordingObserver<GetAllKebunResponse> observer = new RecordingObserver<>();
+        endpoint.getAllKebun(GetAllKebunRequest.newBuilder().build(), observer);
+
+        assertTrue(observer.completed);
+        assertNull(observer.error);
+        assertNotNull(observer.value);
+        assertEquals(0, observer.value.getKebunsList().size());
+    }
+
+    @Test
+    void getAllKebunSkipsNullEntries() {
+        List<com.mysawit.mysawit_kebun.model.Kebun> kebunList = new ArrayList<>();
+        kebunList.add(kebun1);
+        kebunList.add(null);
+        kebunList.add(kebun2);
+        when(kebunService.findAllKebun()).thenReturn(kebunList);
+
+        RecordingObserver<GetAllKebunResponse> observer = new RecordingObserver<>();
+        endpoint.getAllKebun(GetAllKebunRequest.newBuilder().build(), observer);
+
+        assertTrue(observer.completed);
+        assertNull(observer.error);
+        assertNotNull(observer.value);
+        assertEquals(2, observer.value.getKebunsList().size());
+        assertEquals("Kebun 1", observer.value.getKebunsList().get(0).getNama());
+        assertEquals("Kebun 2", observer.value.getKebunsList().get(1).getNama());
+    }
+
+    @Test
     void getKebunByIdSuccess() {
         when(kebunService.findById("aa558a9a-1a39-460a-8860-71aa6aa63aa6")).thenReturn(kebun1);
 
@@ -153,6 +185,22 @@ class KebunGrpcEndpointTest {
     }
 
     @Test
+    void getKebunByIdNullResultReturnsNotFound() {
+        when(kebunService.findById("missing-id")).thenReturn(null);
+
+        RecordingObserver<GetKebunByIdResponse> observer = new RecordingObserver<>();
+        endpoint.getKebunById(
+                GetKebunByIdRequest.newBuilder().setId("missing-id").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.NOT_FOUND.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Kebun with ID missing-id not found.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
     void getKebunByNameSuccess() {
         when(kebunService.findByName("Kebun 1")).thenReturn(kebun1);
 
@@ -185,6 +233,22 @@ class KebunGrpcEndpointTest {
         assertNotNull(observer.error);
         assertEquals(Status.NOT_FOUND.getCode(), Status.fromThrowable(observer.error).getCode());
         assertEquals("Kebun with name Kebun Tidak Ada not found.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void getKebunByNameNullResultReturnsNotFound() {
+        when(kebunService.findByName("Missing Kebun")).thenReturn(null);
+
+        RecordingObserver<GetKebunByNameResponse> observer = new RecordingObserver<>();
+        endpoint.getKebunByName(
+                GetKebunByNameRequest.newBuilder().setName("Missing Kebun").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.NOT_FOUND.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Kebun with name Missing Kebun not found.", Status.fromThrowable(observer.error).getDescription());
     }
 
     @Test
@@ -226,6 +290,24 @@ class KebunGrpcEndpointTest {
     }
 
     @Test
+    void checkMandorAssignmentNullOptionalHandledAsEmpty() {
+        when(kebunService.checkMandorAssignment("mandor-null")).thenReturn(null);
+
+        RecordingObserver<CheckMandorAssignmentResponse> observer = new RecordingObserver<>();
+        endpoint.checkMandorAssignment(
+                CheckMandorAssignmentRequest.newBuilder().setMandorId("mandor-null").build(),
+                observer
+        );
+
+        assertTrue(observer.completed);
+        assertNull(observer.error);
+        assertNotNull(observer.value);
+        assertFalse(observer.value.getAssigned());
+        assertEquals("", observer.value.getKebunId());
+        assertEquals("", observer.value.getNamaKebun());
+    }
+
+    @Test
     void checkSupirAssignmentSuccess() {
         when(kebunService.checkSupirAssignment("supir-001")).thenReturn(Optional.of(kebun2));
 
@@ -261,6 +343,24 @@ class KebunGrpcEndpointTest {
         assertEquals("", observer.value.getKebunId());
         assertEquals("", observer.value.getNamaKebun());
         assertEquals("Supir Truk is not assigned to any kebun", observer.value.getMessage());
+    }
+
+    @Test
+    void checkSupirAssignmentNullOptionalHandledAsEmpty() {
+        when(kebunService.checkSupirAssignment("supir-null")).thenReturn(null);
+
+        RecordingObserver<CheckSupirAssignmentResponse> observer = new RecordingObserver<>();
+        endpoint.checkSupirAssignment(
+                CheckSupirAssignmentRequest.newBuilder().setSupirId("supir-null").build(),
+                observer
+        );
+
+        assertTrue(observer.completed);
+        assertNull(observer.error);
+        assertNotNull(observer.value);
+        assertFalse(observer.value.getAssigned());
+        assertEquals("", observer.value.getKebunId());
+        assertEquals("", observer.value.getNamaKebun());
     }
 
     @Test
@@ -320,5 +420,4 @@ class KebunGrpcEndpointTest {
         assertTrue(protoKebun.getSupirIdsList().contains("supir-002"));
     }
 }
-
 
