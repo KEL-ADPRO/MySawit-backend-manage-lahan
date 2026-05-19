@@ -1,5 +1,6 @@
 package com.mysawit.mysawit_kebun.service;
 
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
 import com.mysawit.mysawit_kebun.grpc.CheckMandorAssignmentRequest;
 import com.mysawit.mysawit_kebun.grpc.CheckMandorAssignmentResponse;
 import com.mysawit.mysawit_kebun.grpc.CheckSupirAssignmentRequest;
@@ -18,8 +19,6 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @GrpcService
@@ -36,13 +35,6 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     }
 
     private Kebun toProtoKebun(com.mysawit.mysawit_kebun.model.Kebun kebun) {
-        if (kebun == null) {
-            return Kebun.newBuilder()
-                    .setId("")
-                    .setNama("")
-                    .setLuas(0.0)
-                    .build();
-        }
 
         Kebun.Builder builder = Kebun.newBuilder()
                 .setId(kebun.getId().toString())
@@ -85,12 +77,9 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     @Override
     public void getAllKebun(GetAllKebunRequest request, StreamObserver<GetAllKebunResponse> responseObserver) {
         try {
-            List<com.mysawit.mysawit_kebun.model.Kebun> kebuns = kebunService.findAllKebun();
             GetAllKebunResponse.Builder response = GetAllKebunResponse.newBuilder();
-            for (com.mysawit.mysawit_kebun.model.Kebun kebun : kebuns == null ? Collections.<com.mysawit.mysawit_kebun.model.Kebun>emptyList() : kebuns) {
-                if (kebun != null) {
-                    response.addKebuns(toProtoKebun(kebun));
-                }
+            for (com.mysawit.mysawit_kebun.model.Kebun kebun : kebunService.findAllKebun()) {
+                response.addKebuns(toProtoKebun(kebun));
             }
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
@@ -103,14 +92,12 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     public void getKebunById(GetKebunByIdRequest request, StreamObserver<GetKebunByIdResponse> responseObserver) {
         try {
             com.mysawit.mysawit_kebun.model.Kebun kebun = kebunService.findById(request.getId());
-            if (kebun == null) {
-                responseObserver.onError(Status.NOT_FOUND.withDescription("Kebun with ID " + request.getId() + " not found.").asRuntimeException());
-                return;
-            }
             responseObserver.onNext(toGetKebunByIdResponse(kebun));
             responseObserver.onCompleted();
-        } catch (IllegalArgumentException ex) {
+        } catch (KebunNotFoundException ex) {
             responseObserver.onError(Status.NOT_FOUND.withDescription(ex.getMessage()).asRuntimeException());
+        } catch (IllegalArgumentException ex) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(ex.getMessage()).asRuntimeException());
         } catch (Exception ex) {
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to fetch kebun by ID.").withCause(ex).asRuntimeException());
         }
@@ -120,13 +107,9 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     public void getKebunByName(GetKebunByNameRequest request, StreamObserver<GetKebunByNameResponse> responseObserver) {
         try {
             com.mysawit.mysawit_kebun.model.Kebun kebun = kebunService.findByName(request.getName());
-            if (kebun == null) {
-                responseObserver.onError(Status.NOT_FOUND.withDescription("Kebun with name " + request.getName() + " not found.").asRuntimeException());
-                return;
-            }
             responseObserver.onNext(toGetKebunByNameResponse(kebun));
             responseObserver.onCompleted();
-        } catch (IllegalArgumentException ex) {
+        } catch (KebunNotFoundException ex) {
             responseObserver.onError(Status.NOT_FOUND.withDescription(ex.getMessage()).asRuntimeException());
         } catch (Exception ex) {
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to fetch kebun by name.").withCause(ex).asRuntimeException());
@@ -136,13 +119,12 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     @Override
     public void checkMandorAssignment(CheckMandorAssignmentRequest request, StreamObserver<CheckMandorAssignmentResponse> responseObserver) {
         try {
-            Optional<com.mysawit.mysawit_kebun.model.Kebun> kebunOptional = Optional.ofNullable(kebunService.checkMandorAssignment(request.getMandorId()))
-                    .orElse(Optional.empty());
+            Optional<com.mysawit.mysawit_kebun.model.Kebun> kebunOptional = kebunService.checkMandorAssignment(request.getMandorId());
             kebunOptional.ifPresentOrElse(
                     kebun -> responseObserver.onNext(CheckMandorAssignmentResponse.newBuilder()
                             .setAssigned(true)
-                            .setKebunId(kebun.getId() == null ? "" : kebun.getId().toString())
-                            .setNamaKebun(kebun.getNama() == null ? "" : kebun.getNama())
+                            .setKebunId(kebun.getId().toString())
+                            .setNamaKebun(kebun.getNama())
                             .setMessage("Mandor assignment found")
                             .build()),
                     () -> responseObserver.onNext(CheckMandorAssignmentResponse.newBuilder()
@@ -160,13 +142,12 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     @Override
     public void checkSupirAssignment(CheckSupirAssignmentRequest request, StreamObserver<CheckSupirAssignmentResponse> responseObserver) {
         try {
-            Optional<com.mysawit.mysawit_kebun.model.Kebun> kebunOptional = Optional.ofNullable(kebunService.checkSupirAssignment(request.getSupirId()))
-                    .orElse(Optional.empty());
+            Optional<com.mysawit.mysawit_kebun.model.Kebun> kebunOptional = kebunService.checkSupirAssignment(request.getSupirId());
             kebunOptional.ifPresentOrElse(
                     kebun -> responseObserver.onNext(CheckSupirAssignmentResponse.newBuilder()
                             .setAssigned(true)
-                            .setKebunId(kebun.getId() == null ? "" : kebun.getId().toString())
-                            .setNamaKebun(kebun.getNama() == null ? "" : kebun.getNama())
+                            .setKebunId(kebun.getId().toString())
+                            .setNamaKebun(kebun.getNama())
                             .setMessage("Supir assignment found")
                             .build()),
                     () -> responseObserver.onNext(CheckSupirAssignmentResponse.newBuilder()
