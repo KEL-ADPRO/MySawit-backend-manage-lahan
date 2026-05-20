@@ -57,9 +57,6 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
 
     private com.mysawit.mysawit_kebun.grpc.Area toProtoArea(com.mysawit.mysawit_kebun.model.Area area) {
         com.mysawit.mysawit_kebun.grpc.Area.Builder builder = com.mysawit.mysawit_kebun.grpc.Area.newBuilder();
-        if (area == null) {
-            return builder.build();
-        }
         builder.setBottomLeft(toProtoKoordinat(area.getBottomLeft()))
                .setBottomRight(toProtoKoordinat(area.getBottomRight()))
                .setTopRight(toProtoKoordinat(area.getTopRight()))
