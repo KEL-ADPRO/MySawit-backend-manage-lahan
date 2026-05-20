@@ -100,6 +100,11 @@ tasks.jacocoTestReport {
 	reports {
 		xml.required.set(true)
 	}
+	classDirectories.setFrom(files(classDirectories.files.map {
+		fileTree(it) {
+			exclude("**/com/mysawit/mysawit_kebun/grpc/**")
+		}
+	}))
 }
 
 sonar {
@@ -111,6 +116,8 @@ sonar {
 		property("sonar.host.url", "https://sonarcloud.io")
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+
+		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**")
 	}
 }
 
