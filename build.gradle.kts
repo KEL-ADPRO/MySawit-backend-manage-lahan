@@ -117,7 +117,8 @@ sonar {
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
 
-		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**")
+		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
+		property("sonar.coverage.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
 	}
 }
 
