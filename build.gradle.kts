@@ -55,6 +55,13 @@ dependencies {
 	implementation("io.grpc:grpc-protobuf:1.62.2")
 	implementation("io.grpc:grpc-stub:1.62.2")
 	compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+
+	// Serenity BDD & RestAssured for Functional Testing
+	testImplementation("net.serenity-bdd:serenity-core:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-junit5:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-spring:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-rest-assured:4.2.8")
+	testImplementation("io.rest-assured:rest-assured:5.5.0")
 }
 
 tasks.withType<Test> {
