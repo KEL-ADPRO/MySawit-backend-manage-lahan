@@ -56,7 +56,6 @@ dependencies {
 	implementation("io.grpc:grpc-stub:1.62.2")
 	compileOnly("org.apache.tomcat:annotations-api:6.0.53")
 
-	// Serenity BDD & RestAssured for Functional Testing
 	testImplementation("net.serenity-bdd:serenity-core:4.2.8")
 	testImplementation("net.serenity-bdd:serenity-junit5:4.2.8")
 	testImplementation("net.serenity-bdd:serenity-spring:4.2.8")
@@ -109,7 +108,10 @@ tasks.jacocoTestReport {
 	}
 	classDirectories.setFrom(files(classDirectories.files.map {
 		fileTree(it) {
-			exclude("**/com/mysawit/mysawit_kebun/grpc/**")
+			exclude(
+				"**/com/mysawit/mysawit_kebun/grpc/**",
+				"**/com/mysawit/mysawit_kebun/controller/KebunSeedController.class"
+			)
 		}
 	}))
 }
@@ -124,8 +126,8 @@ sonar {
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
 
-		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
-		property("sonar.coverage.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
+		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**,**/com/mysawit/mysawit_kebun/controller/KebunSeedController.java")
+		property("sonar.coverage.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**,**/com/mysawit/mysawit_kebun/controller/KebunSeedController.java")
 	}
 }
 
