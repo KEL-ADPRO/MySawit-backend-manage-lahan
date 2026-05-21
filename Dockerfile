@@ -1,4 +1,4 @@
-FROM docker.io/library/eclipse-temurin:21-jdk-alpine AS builder
+FROM docker.io/library/eclipse-temurin:21-jdk AS builder
 
 WORKDIR /src/MySawit-backend-manage-lahan
 COPY . .
@@ -22,6 +22,7 @@ WORKDIR /opt/MySawit-backend-manage-lahan
 COPY --from=builder --chown=${USER_UID}:${USER_GID} /src/MySawit-backend-manage-lahan/build/libs/*.jar app.jar
 
 EXPOSE 8082
+EXPOSE 9090
 
 ENTRYPOINT ["java"]
 CMD ["-jar", "app.jar"]

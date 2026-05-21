@@ -1,5 +1,7 @@
 package com.mysawit.mysawit_kebun.controller;
 
+import com.mysawit.mysawit_kebun.exception.KebunInvalidOperationException;
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -47,10 +49,10 @@ class KebunAssignmentControllerTest extends KebunControllerTestBase {
         String mandorId = "mandor123";
 
         when(kebunService.assignMandor(badId, mandorId))
-                .thenThrow(new IllegalArgumentException("Kebun with ID " + badId + " not found."));
+                .thenThrow(new KebunNotFoundException("Kebun with ID " + badId + " not found."));
 
         mockMvc.perform(patch("/api/kebun/" + badId + "/mandor/" + mandorId).with(csrf()))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Kebun with ID " + badId + " not found."));
     }
 
@@ -120,7 +122,7 @@ class KebunAssignmentControllerTest extends KebunControllerTestBase {
         String supirId = "supir123";
 
         when(kebunService.removeSupir(id, supirId))
-                .thenThrow(new IllegalArgumentException("Supir Truk is not assigned to this kebun."));
+                .thenThrow(new KebunInvalidOperationException("Supir Truk is not assigned to this kebun."));
 
         mockMvc.perform(delete("/api/kebun/" + id + "/supir/" + supirId).with(csrf()))
                 .andExpect(status().isBadRequest())

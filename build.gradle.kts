@@ -1,3 +1,6 @@
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.protobuf
+
 plugins {
 	java
 	jacoco
@@ -5,6 +8,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.sonarqube") version "7.2.2.6593"
 	checkstyle
+	id("com.google.protobuf") version "0.9.4"
 }
 
 group = "com.mysawit"
@@ -31,6 +35,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	compileOnly("org.projectlombok:lombok")
@@ -45,10 +52,29 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+
+	implementation("net.devh:grpc-server-spring-boot-starter:3.0.0.RELEASE")
+	implementation("io.grpc:grpc-protobuf:1.62.2")
+	implementation("io.grpc:grpc-stub:1.62.2")
+	compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+
+	testImplementation("net.serenity-bdd:serenity-core:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-junit5:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-spring:4.2.8")
+	testImplementation("net.serenity-bdd:serenity-rest-assured:4.2.8")
+	testImplementation("io.rest-assured:rest-assured:5.5.0")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+tasks.named<Checkstyle>("checkstyleMain") {
+	source = fileTree("src/main/java")
+}
+
+tasks.named<Checkstyle>("checkstyleTest") {
+	source = fileTree("src/test/java")
 }
 
 tasks.register<Test>("unitTest") {
@@ -82,6 +108,14 @@ tasks.jacocoTestReport {
 	reports {
 		xml.required.set(true)
 	}
+	classDirectories.setFrom(files(classDirectories.files.map {
+		fileTree(it) {
+			exclude(
+				"**/com/mysawit/mysawit_kebun/grpc/**",
+				"**/com/mysawit/mysawit_kebun/controller/KebunSeedController.class"
+			)
+		}
+	}))
 }
 
 sonar {
@@ -93,5 +127,26 @@ sonar {
 		property("sonar.host.url", "https://sonarcloud.io")
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+
+		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**,**/com/mysawit/mysawit_kebun/controller/KebunSeedController.java")
+		property("sonar.coverage.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**,**/com/mysawit/mysawit_kebun/controller/KebunSeedController.java")
+	}
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.25.3"
+	}
+	plugins {
+		id("grpc") {
+			artifact = "io.grpc:protoc-gen-grpc-java:1.62.2"
+		}
+	}
+	generateProtoTasks {
+		all().forEach {
+			it.plugins {
+				id("grpc") { }
+			}
+		}
 	}
 }
