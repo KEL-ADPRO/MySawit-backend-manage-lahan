@@ -7,6 +7,10 @@ import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
+import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
+import com.mysawit.mysawit_kebun.exception.KebunInvalidOperationException;
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
+import com.mysawit.mysawit_kebun.exception.KebunOverlapException;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.model.Koordinat;
@@ -102,7 +106,7 @@ class KebunServiceTest {
 
         when(kebunRepository.existsByNama("Kebun1")).thenReturn(true);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunDuplicateNameException exception = assertThrows(KebunDuplicateNameException.class, () -> {
             kebunService.createKebun(requestDTO);
         });
 
@@ -125,7 +129,7 @@ class KebunServiceTest {
         when(kebunRepository.findAll()).thenReturn(kebunList);
         when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(true);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunOverlapException exception = assertThrows(KebunOverlapException.class, () -> {
             kebunService.createKebun(requestDTO);
         });
 
@@ -154,7 +158,7 @@ class KebunServiceTest {
         UUID uuid = UUID.fromString("dd558d9d-1d39-460d-8860-71dd6dd63dd6");
         when(kebunRepository.findById(uuid)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunNotFoundException exception = assertThrows(KebunNotFoundException.class, () -> {
             kebunService.findById(uuid.toString());
         });
         assertEquals("Kebun with ID " + uuid.toString() + " not found.", exception.getMessage());
@@ -172,7 +176,7 @@ class KebunServiceTest {
     void testFindKebunByNameIfNotExist() {
         when(kebunRepository.findByNama("Kebun4")).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunNotFoundException exception = assertThrows(KebunNotFoundException.class, () -> {
             kebunService.findByName("Kebun4");
         });
         assertEquals("Kebun with name Kebun4 not found.", exception.getMessage());
@@ -197,7 +201,7 @@ class KebunServiceTest {
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunNotFoundException exception = assertThrows(KebunNotFoundException.class, () -> {
             kebunService.deleteKebunById(id);
         });
         assertEquals("Kebun with ID " + id + " not found.", exception.getMessage());
@@ -211,7 +215,7 @@ class KebunServiceTest {
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunInvalidOperationException exception = assertThrows(KebunInvalidOperationException.class, () -> {
             kebunService.deleteKebunById(id);
         });
         assertEquals("Cannot delete kebun with assigned Mandor. Reassign Mandor first.", exception.getMessage());
@@ -255,7 +259,7 @@ class KebunServiceTest {
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.existsByNama("Kebun2")).thenReturn(true);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunDuplicateNameException exception = assertThrows(KebunDuplicateNameException.class, () -> {
             kebunService.updateKebun(uuid.toString(), updatedData);
         });
 
@@ -283,7 +287,7 @@ class KebunServiceTest {
 
         when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(true);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunOverlapException exception = assertThrows(KebunOverlapException.class, () -> {
             kebunService.updateKebun(uuid.toString(), updatedData);
         });
 
@@ -340,7 +344,7 @@ class KebunServiceTest {
 
         when(kebunRepository.findById(targetUuid)).thenReturn(Optional.of(kebun2));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunInvalidOperationException exception = assertThrows(KebunInvalidOperationException.class, () -> {
             kebunService.assignMandor(targetKebunId, mandorId);
         });
 
@@ -434,7 +438,7 @@ class KebunServiceTest {
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        KebunInvalidOperationException exception = assertThrows(KebunInvalidOperationException.class, () -> {
             kebunService.removeSupir(kebunId, supirId);
         });
 

@@ -15,40 +15,28 @@ public class KebunAssignmentController {
 
     @PatchMapping("/{kebunId}/mandor/{mandorId}")
     public ResponseEntity<WebResponse<?>> assignMandor(@PathVariable String kebunId, @PathVariable String mandorId) {
-        try {
-            Kebun updatedKebun = kebunService.assignMandor(kebunId, mandorId);
-            return ResponseEntity.ok(WebResponse.builder()
-                    .message("Mandor assigned successfully")
-                    .data(updatedKebun)
-                    .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
-        }
+        Kebun updatedKebun = kebunService.assignMandor(kebunId, mandorId);
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Mandor assigned successfully")
+                .data(updatedKebun)
+                .build());
     }
 
     @PatchMapping("/{kebunId}/supir/{supirId}")
     public ResponseEntity<WebResponse<?>> assignSupir(@PathVariable String kebunId, @PathVariable String supirId) {
-        try {
-            Kebun updatedKebun = kebunService.assignSupir(kebunId, supirId);
-            return ResponseEntity.ok(WebResponse.builder()
-                    .message("Supir Truk assigned successfully")
-                    .data(updatedKebun)
-                    .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
-        }
+        Kebun updatedKebun = kebunService.assignSupir(kebunId, supirId);
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Supir Truk assigned successfully")
+                .data(updatedKebun)
+                .build());
     }
 
     @DeleteMapping("/{kebunId}/supir/{supirId}")
     public ResponseEntity<WebResponse<?>> removeSupir(@PathVariable String kebunId, @PathVariable String supirId) {
-        try {
-            Kebun updatedKebun = kebunService.removeSupir(kebunId, supirId);
-            return ResponseEntity.ok(WebResponse.builder()
-                    .message("Supir Truk removed successfully")
-                    .data(updatedKebun)
-                    .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(WebResponse.builder().message(e.getMessage()).build());
-        }
+        Kebun updatedKebun = kebunService.removeSupir(kebunId, supirId);
+        return ResponseEntity.ok(WebResponse.builder()
+                .message("Supir Truk removed successfully")
+                .data(updatedKebun)
+                .build());
     }
 }

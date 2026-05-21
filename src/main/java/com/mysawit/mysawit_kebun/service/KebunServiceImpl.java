@@ -5,6 +5,10 @@ import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
+import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
+import com.mysawit.mysawit_kebun.exception.KebunInvalidOperationException;
+import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
+import com.mysawit.mysawit_kebun.exception.KebunOverlapException;
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Kebun;
 import com.mysawit.mysawit_kebun.repository.KebunRepository;
@@ -35,7 +39,7 @@ public class KebunServiceImpl implements KebunService {
     @Override
     public Kebun findById(String id) {
         UUID uuid = UUID.fromString(id);
-        Kebun foundkebun = kebunRepository.findById(uuid).orElseThrow(() -> new IllegalArgumentException("Kebun with ID " + id + " not found."));
+        Kebun foundkebun = kebunRepository.findById(uuid).orElseThrow(() -> new KebunNotFoundException("Kebun with ID " + id + " not found."));
         return foundkebun;
     }
 
@@ -43,14 +47,14 @@ public class KebunServiceImpl implements KebunService {
     public Kebun findByName(String name) {
         Kebun foundkebun = kebunRepository.findByNama(name).orElse(null);
         if (foundkebun == null) {
-            throw new IllegalArgumentException("Kebun with name " + name + " not found.");
+            throw new KebunNotFoundException("Kebun with name " + name + " not found.");
         }
         return foundkebun;
     }
 
     private void createNameValidation(String name) {
         if (kebunRepository.existsByNama(name)) {
-            throw new IllegalArgumentException("Kebun with name " + name + " already exists.");
+            throw new KebunDuplicateNameException("Kebun with name " + name + " already exists.");
         }
     }
 
@@ -58,7 +62,7 @@ public class KebunServiceImpl implements KebunService {
         List<Kebun> existingKebuns = kebunRepository.findAll();
         for (Kebun existingKebun : existingKebuns) {
             if (overlapChecker.checkOverlap(newArea, existingKebun.getArea())) {
-                throw new IllegalArgumentException("Kebun overlaps with an existing kebun.");
+                throw new KebunOverlapException("Kebun overlaps with an existing kebun.");
             }
         }
     }
@@ -81,7 +85,7 @@ public class KebunServiceImpl implements KebunService {
 
     private void deleteKebunValidation(Kebun kebun) {
         if (kebun.getMandorId() != null) {
-            throw new IllegalArgumentException("Cannot delete kebun with assigned Mandor. Reassign Mandor first.");
+            throw new KebunInvalidOperationException("Cannot delete kebun with assigned Mandor. Reassign Mandor first.");
         }
     }
 
@@ -96,7 +100,7 @@ public class KebunServiceImpl implements KebunService {
 
     private void updateNameValidation(Kebun existingKebun, String newName) {
         if (!existingKebun.getNama().equals(newName) && kebunRepository.existsByNama(newName)) {
-            throw new IllegalArgumentException("Kebun with name " + newName + " already exists.");
+            throw new KebunDuplicateNameException("Kebun with name " + newName + " already exists.");
         }
     }
 
@@ -104,7 +108,7 @@ public class KebunServiceImpl implements KebunService {
         List<Kebun> existingKebuns = kebunRepository.findAll();
         for (Kebun otherKebun: existingKebuns) {
             if (!otherKebun.getId().equals(existingKebunId) && overlapChecker.checkOverlap(newArea, otherKebun.getArea())) {
-                throw new IllegalArgumentException("Updated kebun overlaps with an existing kebun.");
+                throw new KebunOverlapException("Updated kebun overlaps with an existing kebun.");
             }
         }
     }
@@ -130,7 +134,7 @@ public class KebunServiceImpl implements KebunService {
 
     private void validateTargetKebunAvailability(Kebun targetKebun, String mandorId) {
         if (targetKebun.getMandorId() != null && !targetKebun.getMandorId().equals(mandorId)) {
-            throw new IllegalArgumentException("Kebun already has a different Mandor assigned. Reassign that Mandor first.");
+            throw new KebunInvalidOperationException("Kebun already has a different Mandor assigned. Reassign that Mandor first.");
         }
     }
 
@@ -199,7 +203,7 @@ public class KebunServiceImpl implements KebunService {
         Kebun existingKebun = findById(kebunId);
 
         if (!existingKebun.getSupirIds().contains(supirId)) {
-            throw new IllegalArgumentException("Supir Truk is not assigned to this kebun.");
+            throw new KebunInvalidOperationException("Supir Truk is not assigned to this kebun.");
         }
 
         existingKebun.getSupirIds().remove(supirId);

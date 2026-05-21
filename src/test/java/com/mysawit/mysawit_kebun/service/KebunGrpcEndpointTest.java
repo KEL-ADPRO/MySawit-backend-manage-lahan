@@ -116,6 +116,7 @@ class KebunGrpcEndpointTest {
         assertEquals(0, observer.value.getKebunsList().size());
     }
 
+
     @Test
     void getKebunByIdSuccess() {
         when(kebunService.findById("aa558a9a-1a39-460a-8860-71aa6aa63aa6")).thenReturn(kebun1);
@@ -137,7 +138,7 @@ class KebunGrpcEndpointTest {
     @Test
     void getKebunByIdNotFound() {
         when(kebunService.findById("invalid-id")).thenThrow(
-                new IllegalArgumentException("Kebun with ID invalid-id not found.")
+                new com.mysawit.mysawit_kebun.exception.KebunNotFoundException("Kebun with ID invalid-id not found.")
         );
 
         RecordingObserver<GetKebunByIdResponse> observer = new RecordingObserver<>();
@@ -150,6 +151,24 @@ class KebunGrpcEndpointTest {
         assertNotNull(observer.error);
         assertEquals(Status.NOT_FOUND.getCode(), Status.fromThrowable(observer.error).getCode());
         assertEquals("Kebun with ID invalid-id not found.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void getKebunByIdInvalidUUID() {
+        when(kebunService.findById("not-a-uuid")).thenThrow(
+                new IllegalArgumentException("Invalid UUID format: not-a-uuid")
+        );
+
+        RecordingObserver<GetKebunByIdResponse> observer = new RecordingObserver<>();
+        endpoint.getKebunById(
+                GetKebunByIdRequest.newBuilder().setId("not-a-uuid").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Invalid UUID format: not-a-uuid", Status.fromThrowable(observer.error).getDescription());
     }
 
     @Test
@@ -172,7 +191,7 @@ class KebunGrpcEndpointTest {
     @Test
     void getKebunByNameNotFound() {
         when(kebunService.findByName("Kebun Tidak Ada")).thenThrow(
-                new IllegalArgumentException("Kebun with name Kebun Tidak Ada not found.")
+                new com.mysawit.mysawit_kebun.exception.KebunNotFoundException("Kebun with name Kebun Tidak Ada not found.")
         );
 
         RecordingObserver<GetKebunByNameResponse> observer = new RecordingObserver<>();
@@ -186,6 +205,7 @@ class KebunGrpcEndpointTest {
         assertEquals(Status.NOT_FOUND.getCode(), Status.fromThrowable(observer.error).getCode());
         assertEquals("Kebun with name Kebun Tidak Ada not found.", Status.fromThrowable(observer.error).getDescription());
     }
+
 
     @Test
     void checkMandorAssignmentSuccess() {
@@ -225,6 +245,7 @@ class KebunGrpcEndpointTest {
         assertEquals("Mandor is not assigned to any kebun", observer.value.getMessage());
     }
 
+
     @Test
     void checkSupirAssignmentSuccess() {
         when(kebunService.checkSupirAssignment("supir-001")).thenReturn(Optional.of(kebun2));
@@ -262,6 +283,7 @@ class KebunGrpcEndpointTest {
         assertEquals("", observer.value.getNamaKebun());
         assertEquals("Supir Truk is not assigned to any kebun", observer.value.getMessage());
     }
+
 
     @Test
     void checkSupirAssignmentWithMultipleSupirs() {
@@ -319,6 +341,82 @@ class KebunGrpcEndpointTest {
         assertTrue(protoKebun.getSupirIdsList().contains("supir-001"));
         assertTrue(protoKebun.getSupirIdsList().contains("supir-002"));
     }
-}
 
+    @Test
+    void getKebunByIdHandlesGenericException() {
+        when(kebunService.findById("test-id")).thenThrow(new RuntimeException("Database connection failed"));
+
+        RecordingObserver<GetKebunByIdResponse> observer = new RecordingObserver<>();
+        endpoint.getKebunById(
+                GetKebunByIdRequest.newBuilder().setId("test-id").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INTERNAL.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Failed to fetch kebun by ID.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void getKebunByNameHandlesGenericException() {
+        when(kebunService.findByName("Test Kebun")).thenThrow(new RuntimeException("Service error"));
+
+        RecordingObserver<GetKebunByNameResponse> observer = new RecordingObserver<>();
+        endpoint.getKebunByName(
+                GetKebunByNameRequest.newBuilder().setName("Test Kebun").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INTERNAL.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Failed to fetch kebun by name.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void checkMandorAssignmentHandlesGenericException() {
+        when(kebunService.checkMandorAssignment("mandor-123")).thenThrow(new RuntimeException("Service error"));
+
+        RecordingObserver<CheckMandorAssignmentResponse> observer = new RecordingObserver<>();
+        endpoint.checkMandorAssignment(
+                CheckMandorAssignmentRequest.newBuilder().setMandorId("mandor-123").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INTERNAL.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Failed to check mandor assignment.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void checkSupirAssignmentHandlesGenericException() {
+        when(kebunService.checkSupirAssignment("supir-123")).thenThrow(new RuntimeException("Service error"));
+
+        RecordingObserver<CheckSupirAssignmentResponse> observer = new RecordingObserver<>();
+        endpoint.checkSupirAssignment(
+                CheckSupirAssignmentRequest.newBuilder().setSupirId("supir-123").build(),
+                observer
+        );
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INTERNAL.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Failed to check supir assignment.", Status.fromThrowable(observer.error).getDescription());
+    }
+
+    @Test
+    void getAllKebunHandlesGenericException() {
+        when(kebunService.findAllKebun()).thenThrow(new RuntimeException("Database error"));
+
+        RecordingObserver<GetAllKebunResponse> observer = new RecordingObserver<>();
+        endpoint.getAllKebun(GetAllKebunRequest.newBuilder().build(), observer);
+
+        assertFalse(observer.completed);
+        assertNotNull(observer.error);
+        assertEquals(Status.INTERNAL.getCode(), Status.fromThrowable(observer.error).getCode());
+        assertEquals("Failed to fetch kebun data.", Status.fromThrowable(observer.error).getDescription());
+    }
+}
 

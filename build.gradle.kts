@@ -35,6 +35,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	compileOnly("org.projectlombok:lombok")
@@ -99,6 +100,11 @@ tasks.jacocoTestReport {
 	reports {
 		xml.required.set(true)
 	}
+	classDirectories.setFrom(files(classDirectories.files.map {
+		fileTree(it) {
+			exclude("**/com/mysawit/mysawit_kebun/grpc/**")
+		}
+	}))
 }
 
 sonar {
@@ -110,6 +116,9 @@ sonar {
 		property("sonar.host.url", "https://sonarcloud.io")
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+
+		property("sonar.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
+		property("sonar.coverage.exclusions", "**/com/mysawit/mysawit_kebun/grpc/**,**/grpc/**,build/generated/**")
 	}
 }
 
