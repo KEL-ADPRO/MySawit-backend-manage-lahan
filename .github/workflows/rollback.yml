@@ -35,6 +35,7 @@ jobs:
               --name kebun-app \
               -p 8082:8082 \
               -p 9090:9090 \
+              -e JAVA_TOOL_OPTIONS="-Xmx256m -Xms256m" \
               -e NEON_DB_URL="${{ secrets.NEON_DB_URL }}" \
               -e NEON_DB_USERNAME="${{ secrets.NEON_DB_USERNAME }}" \
               -e NEON_DB_PASSWORD="${{ secrets.NEON_DB_PASSWORD }}" \
