@@ -53,11 +53,21 @@ jobs:
               -p 8082:8082 \
               -p 9090:9090 \
               -e NEON_DB_URL="${{ secrets.NEON_DB_URL }}" \
+              -e JAVA_TOOL_OPTIONS="-Xmx256m -Xms256m" \
               -e NEON_DB_USERNAME="${{ secrets.NEON_DB_USERNAME }}" \
               -e NEON_DB_PASSWORD="${{ secrets.NEON_DB_PASSWORD }}" \
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
             
+            sleep 15
+            
+            # Check if the container is still running
+            if [ "$(sudo docker inspect -f '{{.State.Running}}' kebun-app)" = "false" ]; then
+                echo "CRITICAL: kebun-app crashed immediately after starting!"
+                sudo docker logs kebun-app
+                exit 1
+            fi
+
             sudo docker system prune -af
             
             # Keep codebase configurations on VPS in sync with GitHub
