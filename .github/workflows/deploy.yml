@@ -59,3 +59,12 @@ jobs:
               ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
             
             sudo docker system prune -af
+            
+            # Keep codebase configurations on VPS in sync with GitHub
+            cd ~/MySawit-backend-manage-lahan
+            git checkout main
+            git pull origin main
+            
+            # Restart telemetry (Prometheus & Grafana) with updated configurations
+            sudo docker-compose down || true
+            sudo docker-compose up -d
