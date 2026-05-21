@@ -1,4 +1,4 @@
-FROM docker.io/library/eclipse-temurin:21-jdk-alpine AS builder
+FROM docker.io/library/eclipse-temurin:21-jdk AS builder
 
 WORKDIR /src/MySawit-backend-manage-lahan
 COPY . .

@@ -1,0 +1,47 @@
+name: Rollback Deployment (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'The Git Commit SHA (full hash or 7-character short SHA) to roll back to'
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    name: Rollback on AWS Academy EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into AWS and Rollback
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ubuntu
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            echo "Starting rollback to version: ${{ inputs.commit_sha }}"
+            
+            # Pull the specific version from Docker Hub
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kebun-service:${{ inputs.commit_sha }}
+            
+            # Stop and remove the currently running container
+            sudo docker stop kebun-app || true
+            sudo docker rm kebun-app || true
+            
+            # Run the container with the selected version
+            sudo docker run -d \
+              --name kebun-app \
+              -p 8082:8082 \
+              -p 9090:9090 \
+              -e NEON_DB_URL="${{ secrets.NEON_DB_URL }}" \
+              -e NEON_DB_USERNAME="${{ secrets.NEON_DB_USERNAME }}" \
+              -e NEON_DB_PASSWORD="${{ secrets.NEON_DB_PASSWORD }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              ${{ secrets.DOCKER_USERNAME }}/kebun-service:${{ inputs.commit_sha }}
+            
+            # Prune old unused images to free space
+            sudo docker system prune -af
+            
+            echo "Rollback successful!"

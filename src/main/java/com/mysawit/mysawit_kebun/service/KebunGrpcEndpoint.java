@@ -15,13 +15,17 @@ import com.mysawit.mysawit_kebun.grpc.Kebun;
 import com.mysawit.mysawit_kebun.grpc.KebunServiceGrpc;
 import com.mysawit.mysawit_kebun.grpc.Koordinat;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.transaction.annotation.Transactional;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Optional;
 
+@Slf4j
 @GrpcService
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
     private final KebunService kebunService;
@@ -81,6 +85,7 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         } catch (Exception ex) {
+            log.error("Error in getAllKebun: {}", ex.getMessage(), ex);
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to fetch kebun data.").withCause(ex).asRuntimeException());
         }
     }
@@ -92,10 +97,13 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
             responseObserver.onNext(toGetKebunByIdResponse(kebun));
             responseObserver.onCompleted();
         } catch (KebunNotFoundException ex) {
+            log.warn("Kebun not found by ID: {}", request.getId());
             responseObserver.onError(Status.NOT_FOUND.withDescription(ex.getMessage()).asRuntimeException());
         } catch (IllegalArgumentException ex) {
+            log.warn("Invalid ID format: {}", request.getId());
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(ex.getMessage()).asRuntimeException());
         } catch (Exception ex) {
+            log.error("Error in getKebunById for ID {}: {}", request.getId(), ex.getMessage(), ex);
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to fetch kebun by ID.").withCause(ex).asRuntimeException());
         }
     }
@@ -107,8 +115,10 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
             responseObserver.onNext(toGetKebunByNameResponse(kebun));
             responseObserver.onCompleted();
         } catch (KebunNotFoundException ex) {
+            log.warn("Kebun not found by name: {}", request.getName());
             responseObserver.onError(Status.NOT_FOUND.withDescription(ex.getMessage()).asRuntimeException());
         } catch (Exception ex) {
+            log.error("Error in getKebunByName for name {}: {}", request.getName(), ex.getMessage(), ex);
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to fetch kebun by name.").withCause(ex).asRuntimeException());
         }
     }
@@ -132,6 +142,7 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
                             .build()));
             responseObserver.onCompleted();
         } catch (Exception ex) {
+            log.error("Error in checkMandorAssignment for mandorId {}: {}", request.getMandorId(), ex.getMessage(), ex);
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to check mandor assignment.").withCause(ex).asRuntimeException());
         }
     }
@@ -155,6 +166,7 @@ public class KebunGrpcEndpoint extends KebunServiceGrpc.KebunServiceImplBase {
                             .build()));
             responseObserver.onCompleted();
         } catch (Exception ex) {
+            log.error("Error in checkSupirAssignment for supirId {}: {}", request.getSupirId(), ex.getMessage(), ex);
             responseObserver.onError(Status.INTERNAL.withDescription("Failed to check supir assignment.").withCause(ex).asRuntimeException());
         }
     }

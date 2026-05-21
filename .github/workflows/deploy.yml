@@ -3,7 +3,7 @@ name: Continuous Deployment (Production)
 on:
   push:
     branches:
-      - main
+      - async
 
 jobs:
   build-and-push:
@@ -25,7 +25,10 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
+            ${{ secrets.DOCKER_USERNAME }}/kebun-service:${{ github.sha }}
+
 
   deploy-to-aws:
     name: Deploy to AWS Academy EC2
