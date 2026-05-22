@@ -1,6 +1,7 @@
 package com.mysawit.mysawit_kebun.controller;
 
 import com.mysawit.mysawit_kebun.dto.KebunRequestDto;
+import com.mysawit.mysawit_kebun.exception.KebunAreaExceededException;
 import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
 import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
 import com.mysawit.mysawit_kebun.exception.KebunOverlapException;
@@ -51,6 +52,20 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Kebun overlaps with an existing kebun."));
+    }
+
+    @Test
+    @WithMockUser(authorities = adminAuth)
+    void testCreateKebunAreaExceeded() throws Exception {
+        when(kebunService.createKebun(any(KebunRequestDto.class)))
+                .thenThrow(new KebunAreaExceededException("Kebun area exceeds the given luas."));
+
+        mockMvc.perform(post("/api/kebun")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(kebun1)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Kebun area exceeds the given luas."));
     }
 
     @Test
@@ -140,6 +155,22 @@ class KebunCommandControllerTest extends KebunControllerTestBase {
                         .content(objectMapper.writeValueAsString(kebun1)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Updated kebun overlaps with an existing kebun."));
+     }
+
+    @Test
+    @WithMockUser(authorities = adminAuth)
+    void testUpdateKebunAreaExceeded() throws Exception {
+        String id = "aa558a9a-1a39-460a-8860-71aa6aa63aa6";
+
+        when(kebunService.updateKebun(eq(id), any(KebunRequestDto.class)))
+                .thenThrow(new KebunAreaExceededException("Kebun area exceeds the given luas."));
+
+        mockMvc.perform(put("/api/kebun/" + id)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(kebun1)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Kebun area exceeds the given luas."));
     }
 }
 

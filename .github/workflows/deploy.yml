@@ -43,15 +43,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            # Fix out-of-sync AppArmor profiles causing 'permission denied' on container operations
-            sudo systemctl enable --now snapd.apparmor || true
-            sudo systemctl start snapd.apparmor || true
-            sudo systemctl restart docker || true
-            
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
             
-            sudo docker stop kebun-app || true
-            sudo docker rm kebun-app || true
+            sudo docker rm -f kebun-app || true
             
             sudo docker run -d \
               --name kebun-app \

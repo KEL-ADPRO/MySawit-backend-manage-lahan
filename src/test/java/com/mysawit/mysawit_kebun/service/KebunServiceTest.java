@@ -7,6 +7,7 @@ import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
+import com.mysawit.mysawit_kebun.exception.KebunAreaExceededException;
 import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
 import com.mysawit.mysawit_kebun.exception.KebunInvalidOperationException;
 import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
@@ -56,7 +57,7 @@ class KebunServiceTest {
         UUID uuid1 = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
         kebun1.setId(uuid1);
         kebun1.setNama("Kebun1");
-        kebun1.setLuas(1);
+        kebun1.setLuas(10000); // Consistent with 100x100 area1
         kebun1.setArea(area1);
 
         Koordinat koordinat5 = new Koordinat(100, 0);
@@ -69,7 +70,7 @@ class KebunServiceTest {
         UUID uuid2 = UUID.fromString("bb558b9b-1b39-460b-8860-71bb6bb63bb6");
         kebun2.setId(uuid2);
         kebun2.setNama("Kebun2");
-        kebun2.setLuas(1);
+        kebun2.setLuas(10000); // Consistent with 100x100 area2
         kebun2.setArea(area2);
 
         kebunList = Arrays.asList(kebun1, kebun2);
@@ -85,7 +86,51 @@ class KebunServiceTest {
 
         KebunRequestDto requestDTO = new KebunRequestDto();
         requestDTO.setNama("Kebun3");
-        requestDTO.setLuas(100);
+        requestDTO.setLuas(20000); // 100x200 polygon area
+        requestDTO.setArea(area);
+
+        Kebun expectedSavedKebun = new Kebun();
+        expectedSavedKebun.setNama("Kebun3");
+
+        when(kebunRepository.findAll()).thenReturn(kebunList);
+        when(overlapChecker.checkOverlap(any(Area.class), any(Area.class))).thenReturn(false);
+        when(kebunRepository.save(any(Kebun.class))).thenReturn(expectedSavedKebun);
+
+        Kebun createdKebun = kebunService.createKebun(requestDTO);
+        assertEquals("Kebun3", createdKebun.getNama());
+    }
+
+    @Test
+    void testCreateKebunAreaExceeded() {
+        KoordinatDto koordinat1 = new KoordinatDto(200, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(300, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(300, 200);
+        KoordinatDto koordinat4 = new KoordinatDto(200, 200);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        KebunRequestDto requestDTO = new KebunRequestDto();
+        requestDTO.setNama("Kebun3");
+        requestDTO.setLuas(19999.0); // Less than the 20000 polygon area (exceeds epsilon)
+        requestDTO.setArea(area);
+
+        KebunAreaExceededException exception = assertThrows(KebunAreaExceededException.class, () -> {
+            kebunService.createKebun(requestDTO);
+        });
+
+        assertTrue(exception.getMessage().contains("exceeds the given luas"));
+    }
+
+    @Test
+    void testCreateKebunAreaWithinEpsilon() {
+        KoordinatDto koordinat1 = new KoordinatDto(200, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(300, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(300, 200);
+        KoordinatDto koordinat4 = new KoordinatDto(200, 200);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        KebunRequestDto requestDTO = new KebunRequestDto();
+        requestDTO.setNama("Kebun3");
+        requestDTO.setLuas(19999.9999999); // Within the 0.0001 epsilon for 20000 area
         requestDTO.setArea(area);
 
         Kebun expectedSavedKebun = new Kebun();
@@ -123,7 +168,7 @@ class KebunServiceTest {
 
         KebunRequestDto requestDTO = new KebunRequestDto();
         requestDTO.setNama("Kebun4");
-        requestDTO.setLuas(100);
+        requestDTO.setLuas(10000); // 100x100 area
         requestDTO.setArea(area);
 
         when(kebunRepository.findAll()).thenReturn(kebunList);
@@ -234,7 +279,7 @@ class KebunServiceTest {
 
         KebunRequestDto kebun = new KebunRequestDto();
         kebun.setNama("Kebun1 Updated");
-        kebun.setLuas(150);
+        kebun.setLuas(20000); // Consistent with 20000 area
         kebun.setArea(area);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
@@ -246,7 +291,7 @@ class KebunServiceTest {
         Kebun result = kebunService.updateKebun(uuid.toString(), kebun);
 
         assertEquals("Kebun1 Updated", result.getNama());
-        assertEquals(150, result.getLuas());
+        assertEquals(20000, result.getLuas());
     }
 
     @Test
@@ -255,6 +300,7 @@ class KebunServiceTest {
 
         KebunRequestDto updatedData = new KebunRequestDto();
         updatedData.setNama("Kebun2");
+        updatedData.setLuas(10000);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
         when(kebunRepository.existsByNama("Kebun2")).thenReturn(true);
@@ -278,7 +324,7 @@ class KebunServiceTest {
 
         KebunRequestDto updatedData = new KebunRequestDto();
         updatedData.setNama("Kebun1 Updated");
-        updatedData.setLuas(150);
+        updatedData.setLuas(10000); // 100x100 area
         updatedData.setArea(overlappingArea);
 
         when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
@@ -292,6 +338,31 @@ class KebunServiceTest {
         });
 
         assertEquals("Updated kebun overlaps with an existing kebun.", exception.getMessage());
+    }
+
+    @Test
+    void testUpdateKebunAreaExceeded() {
+        UUID uuid = UUID.fromString("aa558a9a-1a39-460a-8860-71aa6aa63aa6");
+
+        KoordinatDto koordinat1 = new KoordinatDto(200, 0);
+        KoordinatDto koordinat2 = new KoordinatDto(300, 0);
+        KoordinatDto koordinat3 = new KoordinatDto(300, 200);
+        KoordinatDto koordinat4 = new KoordinatDto(200, 200);
+        AreaDto area = new AreaDto(koordinat1, koordinat2, koordinat3, koordinat4);
+
+        KebunRequestDto updatedData = new KebunRequestDto();
+        updatedData.setNama("Kebun1 Updated");
+        updatedData.setLuas(19999.0); // Less than the 20000 area
+        updatedData.setArea(area);
+
+        when(kebunRepository.findById(uuid)).thenReturn(Optional.of(kebun1));
+        when(kebunRepository.existsByNama("Kebun1 Updated")).thenReturn(false);
+
+        KebunAreaExceededException exception = assertThrows(KebunAreaExceededException.class, () -> {
+            kebunService.updateKebun(uuid.toString(), updatedData);
+        });
+
+        assertTrue(exception.getMessage().contains("exceeds the given luas"));
     }
 
     @Test
