@@ -36,19 +36,16 @@ public class KebunAsyncTest {
 
     @Test
     public void testEventExecutesAsynchronously() throws InterruptedException {
-        MandorAssignmentEvent event = new MandorAssignmentEvent("mandor-1", "kebun-1", "Kebun Indah");
+        MandorAssignmentEvent event = new MandorAssignmentEvent("mandor-1", "kebun-1", "Kebun A");
 
-        // Publish the event
         eventPublisher.publishEvent(event);
 
-        // Wait for the background thread to finish execution and tick the latch
         boolean completed = testAsyncListener.getLatch().await(5, TimeUnit.SECONDS);
         assertTrue(completed, "Async event listener did not finish in time");
 
         String threadName = testAsyncListener.getExecutedThreadName();
         assertNotNull(threadName);
 
-        // Assert that the event listener ran on one of our custom background threads
         assertTrue(threadName.startsWith("KebunAsync-"),
             "Expected thread name to start with 'KebunAsync-', but was: " + threadName);
     }

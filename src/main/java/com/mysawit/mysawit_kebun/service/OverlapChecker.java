@@ -2,19 +2,16 @@ package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Koordinat;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OverlapChecker {
 
+    @RequiredArgsConstructor
     private static class Vector2D {
         private final double x;
         private final double y;
-
-        Vector2D(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
 
         Vector2D subtract(Vector2D other) {
             return new Vector2D(this.x - other.x, this.y - other.y);
@@ -43,17 +40,14 @@ public class OverlapChecker {
         Vector2D[] polyA = getVertices(a);
         Vector2D[] polyB = getVertices(b);
 
-        // Test separating axes from polygon A's edges
         if (hasSeparatingAxis(polyA, polyB)) {
             return false;
         }
 
-        // Test separating axes from polygon B's edges
         if (hasSeparatingAxis(polyB, polyA)) {
             return false;
         }
 
-        // No separating axis found -> the polygons overlap!
         return true;
     }
 
@@ -82,8 +76,6 @@ public class OverlapChecker {
             Projection proj1 = project(poly1, axis);
             Projection proj2 = project(poly2, axis);
 
-            // If the projections do not overlap, we have found a separating axis.
-            // Touching borders exactly on the edge is considered NOT overlapping.
             if (proj1.max <= proj2.min || proj2.max <= proj1.min) {
                 return true;
             }
