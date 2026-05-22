@@ -30,7 +30,6 @@ public class KebunSeedController {
         int failureCount = 0;
 
         for (int i = 0; i < count; i++) {
-            // Calculate non-overlapping coordinates in sequence
             int offset = i * 15;
             KoordinatDto bottomLeft = new KoordinatDto(offset, 0);
             KoordinatDto bottomRight = new KoordinatDto(offset + 10, 0);
