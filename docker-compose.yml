@@ -4,6 +4,7 @@ services:
     container_name: mysawit-prometheus
     volumes:
       - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-storage:/prometheus
     ports:
       - "9095:9090"
     extra_hosts:
@@ -23,3 +24,4 @@ services:
 
 volumes:
   grafana-storage:
+  prometheus-storage:
