@@ -43,6 +43,11 @@ jobs:
           username: ubuntu
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
+            # Fix out-of-sync AppArmor profiles causing 'permission denied' on container operations
+            sudo systemctl enable --now snapd.apparmor || true
+            sudo systemctl start snapd.apparmor || true
+            sudo systemctl restart docker || true
+            
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kebun-service:latest
             
             sudo docker stop kebun-app || true
@@ -78,8 +83,6 @@ jobs:
             git pull origin main
             
             # Restart telemetry (Prometheus & Grafana) with updated configurations
-            sudo systemctl enable --now snapd.apparmor || true
-            sudo systemctl start snapd.apparmor || true
             sudo docker-compose down || true
             sudo docker-compose up -d
             # End of deployment workflow
