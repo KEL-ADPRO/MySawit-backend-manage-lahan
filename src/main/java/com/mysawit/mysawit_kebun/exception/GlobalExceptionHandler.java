@@ -38,6 +38,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(KebunAreaExceededException.class)
+    public ResponseEntity<ErrorResponse> handleKebunAreaExceeded(KebunAreaExceededException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Kebun Area Exceeded")
+                .message(ex.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(KebunDuplicateNameException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateName(KebunDuplicateNameException ex, WebRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()

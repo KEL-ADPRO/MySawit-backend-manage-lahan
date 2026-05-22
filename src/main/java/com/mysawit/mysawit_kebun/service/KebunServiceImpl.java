@@ -5,6 +5,7 @@ import com.mysawit.mysawit_kebun.event.MandorAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.MandorRemovalEvent;
 import com.mysawit.mysawit_kebun.event.SupirAssignmentEvent;
 import com.mysawit.mysawit_kebun.event.SupirRemovalEvent;
+import com.mysawit.mysawit_kebun.exception.KebunAreaExceededException;
 import com.mysawit.mysawit_kebun.exception.KebunDuplicateNameException;
 import com.mysawit.mysawit_kebun.exception.KebunInvalidOperationException;
 import com.mysawit.mysawit_kebun.exception.KebunNotFoundException;
@@ -58,6 +59,19 @@ public class KebunServiceImpl implements KebunService {
         }
     }
 
+    private void validateAreaLuas(Area area, double luas) {
+        if (area != null) {
+            double calculatedArea = area.getCalculatedArea();
+            double epsilon = 0.0001;
+            if ((calculatedArea - luas) > epsilon) {
+                throw new KebunAreaExceededException(
+                        String.format("Kebun area (%.2f) calculated from coordinates exceeds the given luas (%.2f).",
+                                calculatedArea, luas)
+                );
+            }
+        }
+    }
+
     private void createOverlapValidation(Area newArea) {
         List<Kebun> existingKebuns = kebunRepository.findAll();
         for (Kebun existingKebun : existingKebuns) {
@@ -73,6 +87,7 @@ public class KebunServiceImpl implements KebunService {
         createNameValidation(requestDTO.getNama());
 
         Area newArea = requestDTO.getArea().toEntity();
+        validateAreaLuas(newArea, requestDTO.getLuas());
         createOverlapValidation(newArea);
 
         Kebun kebun = new Kebun();
@@ -123,7 +138,10 @@ public class KebunServiceImpl implements KebunService {
         if (requestDTO.getArea() != null) {
             Area updatedArea = requestDTO.getArea().toEntity();
             updateOverlapValidation(updatedArea, existingKebun.getId());
+            validateAreaLuas(updatedArea, requestDTO.getLuas());
             existingKebun.setArea(updatedArea);
+        } else {
+            validateAreaLuas(existingKebun.getArea(), requestDTO.getLuas());
         }
 
         existingKebun.setNama(requestDTO.getNama());
