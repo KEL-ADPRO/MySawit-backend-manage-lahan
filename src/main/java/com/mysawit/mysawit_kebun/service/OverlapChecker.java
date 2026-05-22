@@ -2,6 +2,7 @@ package com.mysawit.mysawit_kebun.service;
 
 import com.mysawit.mysawit_kebun.model.Area;
 import com.mysawit.mysawit_kebun.model.Koordinat;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component

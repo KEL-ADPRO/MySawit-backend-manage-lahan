@@ -26,12 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
     "jwt.secret=mysecretkeymysecretkeymysecretkeymysecretkeymysecretkeymysecretkeymysecretkey"
 })
-
-@RequiredArgsConstructor
 public class KebunAsyncTest {
 
-    private final ApplicationEventPublisher eventPublisher;
-    private final TestAsyncListener testAsyncListener;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private TestAsyncListener testAsyncListener;
 
     @Test
     public void testEventExecutesAsynchronously() throws InterruptedException {
